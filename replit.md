@@ -1,7 +1,12 @@
-# jarfis Bot v3.0 — WHITE Engine
+# jarfis Bot v3.1 — WHITE Engine
 
 ## المشروع
 بوت Facebook Messenger كامل مبني على fca-unofficial مع لوحة تحكم متكاملة.
+- نظام كوكيز مثل WHITE-V3 (account.txt، جميع الصيغ، بدون m_sess)
+- listener محسّن (MQTT أولاً → HTTP poll إذا لا m_sess)
+- هاندلر WHITE-V3 مع حماية من الـ spam وتسجيل أسماء المجموعات
+- hot-swap من لوحة التحكم
+- نسخ احتياطي تلقائي كل ساعة
 
 ## التشغيل
 ```
@@ -13,11 +18,19 @@ PORT=5000 npm start
 ## البنية
 ```
 src/
-├── index.js              # نقطة الدخول الرئيسية
+├── index.js              # نقطة الدخول — login lock، _selfWrite guard، MQTT/Poll
+├── handler/
+│   └── handlerEvents.js  # WHITE-V3 handler: spam، أسماء، dispatch، group events
 ├── commands/             # أوامر البوت (25+ أمر)
+├── utils/
+│   ├── autoBackup.js     # نسخ احتياطي تلقائي (كل ساعة)
+│   ├── cookieParser.js   # محلل شامل (JSON/String/Token/Netscape)
+│   └── checkLiveCookie.js
 ├── dashboard/
-│   ├── server.js         # Express API + Socket.IO
-│   └── public/index.html # الواجهة (HTML/CSS/JS)
+│   ├── server.js         # Express API + Socket.IO + Backup endpoints
+│   └── public/
+│       ├── index.html    # الواجهة الكاملة v3.1
+│       └── uploads/      # ملفات الوسائط المرفوعة
 ├── protection/
 │   ├── stealth.js        # محرك التخفي (UA rotation, browsing)
 │   ├── outgoingThrottle.js # تقييد الرسائل
@@ -26,23 +39,43 @@ src/
 │   ├── keepAlive.js      # نبضة حياة
 │   └── rateLimit.js      # تقييد الأوامر
 └── utils/
-    ├── checkLiveCookie.js  # التحقق من صحة الكوكيز
-    ├── getFbstateFromToken.js # تحويل التوكن
-    ├── getMsess.js         # جلب m_sess
+    ├── cookieParser.js     # محلل الكوكيز الشامل (جديد)
+    ├── checkLiveCookie.js  # التحقق عبر mbasic.facebook.com
+    ├── getFbstateFromToken.js # تحويل توكن EAAAA→كوكيز
     ├── database.js         # SQLite/Sequelize
     └── loader.js           # تحميل الأوامر
+
+account.txt               # ملف الكوكيز (يستبدل appstate.json)
+config.json               # إعدادات البوت
+data/bot.db               # قاعدة البيانات SQLite
 ```
 
-## الكوكيز المطلوبة
-- `c_user` — معرّف الحساب ✅ مطلوب
-- `xs` — رمز الجلسة ✅ مطلوب
-- `m_sess` — جلسة Messenger 🔑 مطلوب للاستماع الفوري
-- `datr` — رمز التتبع ✅ موصى به
+## نظام الكوكيز — WHITE-V3 Style
+- **account.txt** يستبدل appstate.json بالكامل
+- يدعم جميع الصيغ: Token EAAAA | Cookie String | JSON Array | Netscape
+- **لا يحتاج m_sess** — يعمل بـ HTTP Long-Poll كاحتياطي تلقائي
+- MQTT يُجرَّب أولاً (4 محاولات) ثم يتراجع لـ api.listen
+- التحقق عبر mbasic.facebook.com (WHITE-V3 style)
 
-### كيفية الحصول على m_sess
-1. سجّل دخول في `messenger.com` + `facebook.com` في نفس المتصفح
-2. صدّر الكوكيز بـ c3c أو Cookie-Editor من **كلا الموقعين**
-3. ادمجهما وارفعهما من لوحة التحكم
+## Hot-Swap (تغيير الحساب بدون إعادة تشغيل)
+- ارفع كوكيز جديدة من لوحة التحكم → يتم تغيير الحساب فوراً
+- البوت يراقب account.txt تلقائياً → يعيد الدخول عند أي تغيير
+- `global.reLoginBot()` متاح للاستخدام في أي مكان
+
+## لوج المجموعات
+- يعرض اسم المجموعة + اسم المرسل (محلول من getUserInfo/getThreadInfo)
+- مؤشر لحظي في سجل الرسائل بالداشبورد
+- Cache للأسماء في `global._nameCache`
+
+## مكتبة الوسائط
+- رفع صور/GIF/فيديو/صوت حتى 50 MB
+- عرض مكتبة مرئية مع روابط قابلة للنسخ
+- إدراج مباشر في كود الأوامر من محرر الأوامر
+
+## الأوامر — محرر متقدم
+- عرض/تعديل كود الأوامر مباشرة من الداشبورد
+- قالب جاهز لأوامر جديدة
+- دعم إدراج مرجع الوسائط في الأوامر
 
 ## أنظمة الحماية (WHITE Engine)
 - **Stealth** — تصفح صفحات، تدوير User-Agent، نوم ليلي (1-8 صباحاً)
@@ -53,8 +86,9 @@ src/
 - **Rate Limit** — 8 أوامر/10 ثوانٍ لكل مستخدم
 
 ## قاعدة البيانات
-SQLite — `data/bot.db`
+SQLite — `data/bot.db`  
 - Users, Threads, CommandLogs
 
 ## GitHub
-https://github.com/castrolmocro/fb-messenger-bot
+https://github.com/castrolmocro/fb-messenger-bot  
+⚠️ لا يُرفع للـ GitHub بدون إذن المستخدم
