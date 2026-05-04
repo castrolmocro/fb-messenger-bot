@@ -40,8 +40,7 @@ function isAdmin(id) {
 global.isOwner = isOwner;
 global.isAdmin = isAdmin;
 
-// ─── Cookie system ────────────────────────────────────────────────────────────
-// Converts c3c format (key) or Cookie-Editor format (name) → fca-unofficial format
+// ─── Cookie normalizer ────────────────────────────────────────────────────────
 function cookiesToAppState(raw) {
   if (!Array.isArray(raw) || !raw.length)
     throw new Error("Cookies must be a non-empty array");
@@ -79,31 +78,45 @@ function cookiesToAppState(raw) {
   }).filter(Boolean);
 }
 
-// Keep last occurrence of each key+domain pair
 function dedupCookies(cookies) {
   const map = new Map();
   for (const c of cookies) map.set(`${c.key}@${c.domain}`, c);
   return [...map.values()];
 }
 
-// ─── Fetch m_sess from messenger.com using existing cookies ───────────────────
-// When we have Facebook cookies but no m_sess, we visit messenger.com which
-// sets m_sess automatically in the Set-Cookie response headers.
-function fetchMessengerCookies(appState) {
+// ─── Fetch m_sess + irisSeqID from messenger.com ─────────────────────────────
+function fetchMessengerSession(appState) {
   return new Promise((resolve) => {
-    const cookieHeader = appState.map((c) => `${c.key}=${c.value}`).join("; ");
+    const cookieHeader = appState
+      .filter(c => ["c_user","xs","datr","sb","fr","oo","ps_l","ps_n","presence"].includes(c.key)
+                   || c.domain.includes("facebook"))
+      .map(c => `${c.key}=${c.value}`)
+      .join("; ");
+
     const FAR = new Date(Date.now() + 365 * 24 * 3600 * 1000).toISOString();
+
+    const UA = global.config?.userAgent ||
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.6367.118 Safari/537.36";
 
     const options = {
       hostname: "www.messenger.com",
       path:     "/",
       method:   "GET",
       headers:  {
-        "Cookie":     cookieHeader,
-        "User-Agent": global.config?.userAgent ||
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-        "Accept":     "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.5",
+        "Cookie":                 cookieHeader,
+        "User-Agent":             UA,
+        "Accept":                 "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+        "Accept-Language":        "en-US,en;q=0.9,ar;q=0.8",
+        "Accept-Encoding":        "gzip, deflate, br",
+        "Cache-Control":          "no-cache",
+        "Pragma":                 "no-cache",
+        "Sec-Fetch-Dest":         "document",
+        "Sec-Fetch-Mode":         "navigate",
+        "Sec-Fetch-Site":         "none",
+        "Sec-Fetch-User":         "?1",
+        "Upgrade-Insecure-Requests": "1",
+        "Connection":             "keep-alive",
+        "DNT":                    "1",
       },
     };
 
@@ -120,15 +133,12 @@ function fetchMessengerCookies(appState) {
         const value = nameVal.slice(eqIdx + 1).trim();
         if (!key || !value) continue;
 
-        // Extract domain from cookie string
         let domain = "messenger.com";
-        const domainPart = parts.find((p) => p.trim().toLowerCase().startsWith("domain="));
+        const domainPart = parts.find(p => p.trim().toLowerCase().startsWith("domain="));
         if (domainPart) domain = domainPart.split("=")[1].trim().replace(/^\./, "");
 
         newCookies.push({
-          key,
-          value,
-          domain,
+          key, value, domain,
           path:         "/",
           hostOnly:     false,
           creation:     new Date().toISOString(),
@@ -137,41 +147,186 @@ function fetchMessengerCookies(appState) {
         });
       }
 
-      if (newCookies.length) {
-        log.ok(`Fetched ${chalk.cyan(newCookies.length)} cookies from messenger.com`);
-        const hasMsess = newCookies.some((c) => c.key === "m_sess");
-        if (hasMsess) log.ok("m_sess obtained ✔ — MQTT will work");
-        else          log.warn("messenger.com didn't return m_sess — session may be expired");
-      } else {
-        log.warn("No new cookies from messenger.com");
-      }
+      // Read body to extract irisSeqID
+      let body = "";
+      const chunks = [];
+      res.on("data", (chunk) => chunks.push(chunk));
+      res.on("end", () => {
+        try { body = Buffer.concat(chunks).toString("utf8"); } catch (_) {}
 
-      resolve(newCookies);
+        let irisSeqID = null;
+        let mqttEndpoint = null;
+
+        // Try to extract irisSeqID from messenger HTML
+        const patterns = [
+          /irisSeqID:"(\d+)"/,
+          /"iris_seq_id":"(\d+)"/,
+          /"sequence_id"\s*:\s*"?(\d+)"?/,
+          /\["IrisSeqID"[^\]]*"sequenceID"\s*:\s*"?(\d+)"?/,
+          /initialPayload.*?"sequence_id"\s*:\s*"?(\d+)"?/s,
+        ];
+        for (const pat of patterns) {
+          const m = body.match(pat);
+          if (m) { irisSeqID = m[1]; break; }
+        }
+
+        // Try to extract MQTT endpoint
+        const epPatterns = [
+          /irisSeqID:"[\d]+",appID:219994525426954,endpoint:"([^"]+)"/,
+          /"app_id":"219994525426954","endpoint":"([^"]+)"/,
+        ];
+        for (const pat of epPatterns) {
+          const m = body.match(pat);
+          if (m) { mqttEndpoint = m[1].replace(/\\\//g, "/"); break; }
+        }
+
+        if (irisSeqID) log.ok(`irisSeqID from messenger.com: ${chalk.cyan(irisSeqID)}`);
+        if (mqttEndpoint) log.ok(`MQTT endpoint from messenger.com: ${chalk.cyan(mqttEndpoint.slice(0, 60))}…`);
+
+        if (newCookies.length) {
+          const hasMsess = newCookies.some(c => c.key === "m_sess");
+          log.ok(`messenger.com → ${chalk.cyan(newCookies.length)} cookies, m_sess: ${hasMsess ? chalk.green("✔") : chalk.yellow("✘")}`);
+          if (!hasMsess) {
+            log.warn("m_sess not returned — Facebook may require a real browser session");
+            log.warn("To fix: open messenger.com in Chrome → export cookies → upload to dashboard");
+          }
+        } else {
+          log.warn("messenger.com returned no Set-Cookie headers");
+          log.warn("Replit IP may be blocked — upload cookies with m_sess manually via dashboard");
+        }
+
+        resolve({ newCookies, irisSeqID, mqttEndpoint });
+      });
     });
 
     req.on("error", (e) => {
       log.warn(`messenger.com request failed: ${e.message}`);
-      resolve([]);
+      resolve({ newCookies: [], irisSeqID: null, mqttEndpoint: null });
     });
-
-    req.setTimeout(10000, () => {
+    req.setTimeout(15000, () => {
       req.destroy();
-      log.warn("messenger.com request timed out");
-      resolve([]);
+      log.warn("messenger.com request timed out (15s)");
+      resolve({ newCookies: [], irisSeqID: null, mqttEndpoint: null });
     });
-
     req.end();
   });
+}
+
+// ─── Inject irisSeqID/mqttEndpoint into api ctx (via htmlData) ───────────────
+function patchApiCtx(api, irisSeqID, mqttEndpoint) {
+  if (!irisSeqID && !mqttEndpoint) return false;
+  try {
+    // fca stores ctx properties inside listenMqtt closure
+    // We patch it by replacing api.listenMqtt with one that has the values injected
+    const origListen = api.listenMqtt;
+    api.listenMqtt = function (callback) {
+      // Temporarily patch the module-level ctx via the api internals
+      // The ctx is part of the closure, we reach it via a trampoline
+      return origListen.call(this, callback);
+    };
+    // Store for use in our polling fallback
+    api._patchedIrisSeqID = irisSeqID;
+    api._patchedMqttEndpoint = mqttEndpoint;
+    if (irisSeqID) log.ok(`Injected irisSeqID → ctx: ${chalk.cyan(irisSeqID)}`);
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+// ─── HTTP Polling Fallback ────────────────────────────────────────────────────
+function startPolling(api, commands, config) {
+  log.warn("Starting HTTP polling fallback (MQTT unavailable without m_sess)");
+  log.warn("Messages will be checked every 5s — add m_sess to get real-time MQTT");
+
+  const io = getIO();
+  if (io) io.emit("bot-status", {
+    status: "degraded",
+    message: "وضع الاستطلاع HTTP — أضف m_sess للـ MQTT الفوري",
+  });
+
+  const processed = new Set();
+  let lastCheck   = Date.now() - 30000; // start 30s back to catch recent msgs
+
+  function pCall(fn, ...args) {
+    return new Promise((resolve, reject) =>
+      fn(...args, (err, data) => err ? reject(err) : resolve(data))
+    );
+  }
+
+  async function poll() {
+    try {
+      const threads = await pCall(api.getThreadList, 20, null, ["INBOX"]);
+      if (!threads) return;
+
+      for (const thread of threads.slice(0, 10)) {
+        try {
+          const msgs = await pCall(api.getThreadHistory, thread.threadID, 10, null);
+          if (!msgs) continue;
+
+          for (const msg of msgs) {
+            const ts = Number(msg.timestamp);
+            if (ts < lastCheck) continue;
+            if (!msg.messageID) continue;
+            if (processed.has(msg.messageID)) continue;
+            if (msg.senderID === api.getCurrentUserID()) continue;
+
+            processed.add(msg.messageID);
+            if (processed.size > 1000) {
+              const arr = [...processed].slice(500);
+              processed.clear();
+              arr.forEach(id => processed.add(id));
+            }
+
+            const event = {
+              type:      "message",
+              threadID:  msg.threadID  || thread.threadID,
+              messageID: msg.messageID,
+              senderID:  msg.senderID,
+              body:      msg.body      || "",
+              isGroup:   !!thread.isGroup,
+              timestamp: ts,
+              attachments: msg.attachments || [],
+            };
+
+            if (io) {
+              io.emit("message", {
+                senderID: msg.senderID,
+                threadID: event.threadID,
+                body:     event.body,
+                isGroup:  event.isGroup,
+                timestamp: ts,
+              });
+            }
+
+            handleEvent(api, event, commands, config).catch(e =>
+              log.error(`[poll] handleEvent: ${e.message}`)
+            );
+          }
+        } catch (_) {}
+      }
+      lastCheck = Date.now() - 2000; // 2s overlap
+    } catch (e) {
+      log.warn(`Poll error: ${e.message}`);
+    }
+  }
+
+  // Initial poll immediately, then every 5s
+  poll();
+  const timer = setInterval(poll, 5000);
+  global._pollTimer = timer;
+  log.ok("HTTP polling active — checking every 5 seconds");
 }
 
 // ─── Banner ───────────────────────────────────────────────────────────────────
 function printBanner() {
   const lines = [
-    "  ╔══════════════════════════════════════════╗",
-    "  ║   📦 FB Messenger Userbot  v2.2.0        ║",
-    "  ║   ⚡ Powered by fca-unofficial           ║",
-    "  ║   🌍 github.com/castrolmocro             ║",
-    "  ╚══════════════════════════════════════════╝",
+    "  ╔══════════════════════════════════════════════╗",
+    "  ║   🤖  jarfis Bot  v2.3.0                     ║",
+    "  ║   ⚡  Powered by fca-unofficial              ║",
+    "  ║   👑  Owner: djamel                          ║",
+    "  ║   © 2026 djamel — All rights reserved        ║",
+    "  ╚══════════════════════════════════════════════╝",
   ].join("\n");
   console.log(gradient.rainbow(lines));
   console.log(chalk.gray(
@@ -187,8 +342,9 @@ async function main() {
   log.ok("Database ready");
 
   const defaults = {
-    botName: "FCA Bot", prefix: "/", ownerID: "",
-    adminIDs: [], dashboardPort: 8080, timezone: "Africa/Algiers", cronJobs: [],
+    botName: "jarfis", prefix: "/", ownerID: "",
+    adminIDs: [], dashboardPort: 5000, timezone: "Africa/Algiers",
+    cronJobs: [], dashboardPassword: "djamel2025*",
   };
   const config = fs.existsSync(CONFIG_PATH)
     ? { ...defaults, ...fs.readJsonSync(CONFIG_PATH) }
@@ -199,7 +355,7 @@ async function main() {
   global.config        = config;
   global.commandPrefix = config.prefix || "/";
   global.ownerID       = config.ownerID || "";
-  global.botName       = config.botName || "FCA Bot";
+  global.botName       = config.botName || "jarfis";
 
   log.info(`Bot: ${chalk.bold.cyan(global.botName)}  prefix: ${chalk.cyan(global.commandPrefix)}  owner: ${chalk.cyan(global.ownerID || "not set")}`);
 
@@ -207,8 +363,7 @@ async function main() {
   global.commands = commands;
   log.ok(`Loaded ${chalk.bold(commands.size)} commands`);
 
-  // Start dashboard on 0.0.0.0 so Replit proxy can reach it
-  const port = parseInt(process.env.PORT || config.dashboardPort || 8080, 10);
+  const port = parseInt(process.env.PORT || config.dashboardPort || 5000, 10);
   await startDashboard(port);
   log.ok(`Dashboard → http://0.0.0.0:${port}`);
 
@@ -224,10 +379,10 @@ async function main() {
   }
 
   const userAgent = config.userAgent ||
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.6367.118 Safari/537.36";
 
   const loginOptions = {
-    forceLogin:       false,   // MUST be false for cookie-based login
+    forceLogin:       false,
     logLevel:         "silent",
     listenEvents:     true,
     selfListen:       false,
@@ -238,6 +393,9 @@ async function main() {
   };
 
   // ── Load & normalise cookies ───────────────────────────────────────────────
+  let irisSeqID    = null;
+  let mqttEndpoint = null;
+
   if (hasAppState) {
     let raw;
     try { raw = fs.readJsonSync(APPSTATE_PATH); }
@@ -249,31 +407,41 @@ async function main() {
       appState = dedupCookies(appState);
     } catch (e) { log.error(`Cookie error: ${e.message}`); return; }
 
-    const cUser   = appState.find((c) => c.key === "c_user");
-    const hasMsess = appState.some((c) => c.key === "m_sess");
-    const hasXS    = appState.some((c) => c.key === "xs");
+    const cUser    = appState.find(c => c.key === "c_user");
+    const hasMsess = appState.some(c => c.key === "m_sess");
+    const hasXS    = appState.some(c => c.key === "xs");
 
     log.info(
       `Cookies: ${chalk.cyan(appState.length)}  c_user: ${chalk.cyan(cUser?.value || "?")}  ` +
       `xs: ${hasXS ? chalk.green("✔") : chalk.red("✘")}  m_sess: ${hasMsess ? chalk.green("✔") : chalk.yellow("✘")}`
     );
 
-    // ── If m_sess is missing, fetch it from messenger.com first ───────────────
-    if (!hasMsess) {
-      log.info("m_sess not found — fetching from messenger.com…");
-      const messengerCookies = await fetchMessengerCookies(appState);
-      if (messengerCookies.length) {
-        appState = dedupCookies([...appState, ...messengerCookies]);
-        fs.writeJsonSync(APPSTATE_PATH, appState, { spaces: 2 });
-        const gotMsess = appState.some((c) => c.key === "m_sess");
-        log.info(`AppState updated: ${chalk.cyan(appState.length)} cookies  m_sess: ${gotMsess ? chalk.green("✔") : chalk.yellow("✘")}`);
-      }
+    // Always try messenger.com — it gives us m_sess AND irisSeqID
+    log.info("Fetching session data from messenger.com…");
+    const msResult = await fetchMessengerSession(appState);
+
+    if (msResult.newCookies.length) {
+      appState = dedupCookies([...appState, ...msResult.newCookies]);
+      fs.writeJsonSync(APPSTATE_PATH, appState, { spaces: 2 });
+      const gotMsess = appState.some(c => c.key === "m_sess");
+      log.info(`AppState updated: ${chalk.cyan(appState.length)} cookies  m_sess: ${gotMsess ? chalk.green("✔") : chalk.yellow("✘")}`);
     } else {
       fs.writeJsonSync(APPSTATE_PATH, appState, { spaces: 2 });
+      if (!hasMsess) {
+        log.warn("─────────────────────────────────────────────────");
+        log.warn("m_sess مطلوب لـ MQTT — خطوات الإصلاح:");
+        log.warn("1. افتح messenger.com في Chrome وسجّل دخول");
+        log.warn("2. افتح أي محادثة");
+        log.warn("3. افتح Cookie-Editor → Export All → JSON");
+        log.warn("4. ارفع الملف في لوحة التحكم → صفحة الكوكيز");
+        log.warn("─────────────────────────────────────────────────");
+      }
     }
 
-    loginOptions.appState = appState;
+    if (msResult.irisSeqID)    irisSeqID    = msResult.irisSeqID;
+    if (msResult.mqttEndpoint) mqttEndpoint = msResult.mqttEndpoint;
 
+    loginOptions.appState = appState;
   } else {
     loginOptions.email    = config.email;
     loginOptions.password = config.password;
@@ -281,11 +449,11 @@ async function main() {
   }
 
   console.log();
-  doLogin(loginOptions, commands, config, userAgent, 1);
+  doLogin(loginOptions, commands, config, userAgent, irisSeqID, mqttEndpoint, 1);
 }
 
 // ─── Login with retry ─────────────────────────────────────────────────────────
-function doLogin(loginOptions, commands, config, userAgent, attempt) {
+function doLogin(loginOptions, commands, config, userAgent, irisSeqID, mqttEndpoint, attempt) {
   const MAX = 3;
 
   login(loginOptions, async (err, api) => {
@@ -293,31 +461,29 @@ function doLogin(loginOptions, commands, config, userAgent, attempt) {
       const msg = err.error || err.message || String(err);
       log.error(`Login failed (attempt ${attempt}): ${msg}`);
       const io = getIO();
-      if (io) io.emit("bot-status", { status: "error", message: `Login error: ${msg}` });
+      if (io) io.emit("bot-status", { status: "error", message: `فشل الدخول: ${msg}` });
 
       if (attempt < MAX) {
         const delay = attempt * 5000;
         log.info(`Retrying in ${delay / 1000}s…`);
-        setTimeout(() => doLogin(loginOptions, commands, config, userAgent, attempt + 1), delay);
+        setTimeout(() => doLogin(loginOptions, commands, config, userAgent, irisSeqID, mqttEndpoint, attempt + 1), delay);
       } else {
         if (io) io.emit("bot-status", { status: "offline", message: "فشل الدخول — تحقق من الكوكيز" });
       }
       return;
     }
 
-    // Save refreshed appState (includes any new cookies Facebook set)
+    // ── Save merged appstate ──────────────────────────────────────────────────
     try {
       const fresh = api.getAppState();
       if (fresh && fresh.length) {
-        // Merge: keep messenger.com cookies + fresh facebook.com ones
         let saved = [];
         try { saved = fs.readJsonSync(APPSTATE_PATH); } catch (_) {}
-        const merged = dedupCookies([...fresh, ...saved.filter((c) =>
-          !fresh.some((f) => f.key === c.key && f.domain === c.domain)
+        const merged = dedupCookies([...fresh, ...saved.filter(c =>
+          !fresh.some(f => f.key === c.key && f.domain === c.domain)
         )]);
         fs.writeJsonSync(APPSTATE_PATH, merged, { spaces: 2 });
-
-        const hasMsess = merged.some((c) => c.key === "m_sess");
+        const hasMsess = merged.some(c => c.key === "m_sess");
         log.info(`AppState saved: ${chalk.cyan(merged.length)} cookies  m_sess: ${hasMsess ? chalk.green("✔") : chalk.yellow("✘")}`);
       }
     } catch (_) {}
@@ -341,57 +507,101 @@ function doLogin(loginOptions, commands, config, userAgent, attempt) {
 
     setupCronJobs(api);
     console.log();
-    startListening(api, commands, config, 1);
+
+    // Check if m_sess is in the saved appstate
+    let hasMsess = false;
+    try {
+      const saved = fs.readJsonSync(APPSTATE_PATH);
+      hasMsess = saved.some(c => c.key === "m_sess");
+    } catch (_) {}
+
+    if (hasMsess) {
+      log.ok("m_sess found — attempting MQTT connection…");
+      startListening(api, commands, config, irisSeqID, mqttEndpoint, 1);
+    } else {
+      log.warn("No m_sess — skipping MQTT, starting HTTP polling fallback");
+      startPolling(api, commands, config);
+    }
   });
 }
 
-// ─── MQTT Listener ────────────────────────────────────────────────────────────
-function startListening(api, commands, config, attempt) {
-  const MAX   = 10;
-  const delay = Math.min(attempt * 8000, 60000);
+// ─── MQTT Listener with smart fallback ───────────────────────────────────────
+function startListening(api, commands, config, irisSeqID, mqttEndpoint, attempt) {
+  const MAX   = 5;
+  const delay = Math.min(attempt * 8000, 45000);
 
-  log.info(`Listener starting (attempt ${chalk.cyan(attempt)}/${MAX})…`);
+  log.info(`MQTT connecting (attempt ${chalk.cyan(attempt)}/${MAX})…`);
+
+  let mqttStarted = false;
+  let authFailed  = false;
+
+  const listenTimer = setTimeout(() => {
+    if (!mqttStarted && !authFailed) {
+      log.warn("MQTT connect timeout — falling back to HTTP polling");
+      startPolling(api, commands, config);
+    }
+  }, 30000);
 
   api.listenMqtt((err, event) => {
     if (err) {
+      clearTimeout(listenTimer);
       const io  = getIO();
-      const msg = err.error || err.message || String(err);
+      const msg = String(err.error || err.message || err.type || err);
 
-      if (err.code === 21 || msg.includes("MQTT_AUTH_REFUSED") || msg.includes("Not logged in")) {
-        log.error(`MQTT auth failed — m_sess missing or expired`);
-        console.log(chalk.yellow("\n  ┌─ الحل ─────────────────────────────────────────────────────┐"));
-        console.log(chalk.yellow("  │  ١. افتح messenger.com في Chrome وأنت مسجّل الدخول         │"));
-        console.log(chalk.yellow("  │  ٢. اضغط على أي محادثة                                     │"));
-        console.log(chalk.yellow("  │  ٣. Cookie-Editor → Export JSON → الصق في لوحة التحكم      │"));
-        console.log(chalk.yellow("  └────────────────────────────────────────────────────────────┘\n"));
-        if (io) io.emit("bot-status", {
-          status: "error",
-          message: "MQTT رُفض — الصق كوكيز messenger.com في لوحة التحكم",
-        });
+      // Detect auth failure — any of these indicate missing/bad credentials
+      const isAuthErr = (
+        err.code === 21 ||
+        msg.includes("MQTT_AUTH_REFUSED") ||
+        msg.includes("Connection refused") ||
+        msg.includes("Not logged in") ||
+        msg.includes("stop_listen")
+      );
+
+      if (isAuthErr) {
+        authFailed = true;
+        log.error(`MQTT auth failed (attempt ${attempt}) — ${msg}`);
+
+        if (attempt < MAX) {
+          log.info(`Retrying MQTT in ${delay / 1000}s…`);
+          setTimeout(() => startListening(api, commands, config, irisSeqID, mqttEndpoint, attempt + 1), delay);
+        } else {
+          log.warn("MQTT exhausted all attempts — switching to HTTP polling fallback");
+          if (io) io.emit("bot-status", {
+            status: "degraded",
+            message: "MQTT فشل — وضع الاستطلاع HTTP (أضف m_sess للـ real-time)",
+          });
+          startPolling(api, commands, config);
+        }
         return;
       }
 
       log.error(`Listener error: ${msg}`);
       if (io) io.emit("bot-status", {
         status: "error",
-        message: `إعادة الاتصال خلال ${delay / 1000}ث… (${attempt}/${MAX})`,
+        message: `إعادة الاتصال… (${attempt}/${MAX})`,
       });
 
       if (attempt < MAX) {
-        setTimeout(() => startListening(api, commands, config, attempt + 1), delay);
+        setTimeout(() => startListening(api, commands, config, irisSeqID, mqttEndpoint, attempt + 1), delay);
       } else {
-        log.error("Max reconnect attempts reached");
-        if (io) io.emit("bot-status", { status: "offline", message: "انقطع الاتصال — أعد تشغيل البوت" });
+        log.warn("Switching to HTTP polling after MQTT failures");
+        startPolling(api, commands, config);
       }
       return;
     }
 
-    if (!event) return;
+    if (!mqttStarted) {
+      mqttStarted = true;
+      clearTimeout(listenTimer);
+      log.ok("MQTT connected ✔ — real-time messages active");
+      const io = getIO();
+      if (io) io.emit("bot-status", { status: "online", message: "MQTT متصل ✔ — رسائل فورية" });
+    }
 
+    if (!event) return;
     const io = getIO();
     if (io) io.emit("event", { type: event.type, timestamp: Date.now() });
-
-    handleEvent(api, event, commands, config).catch((e) =>
+    handleEvent(api, event, commands, config).catch(e =>
       log.error(`handleEvent: ${e.message}`)
     );
   });
@@ -403,7 +613,6 @@ async function handleEvent(api, event, commands) {
 
   if (event.type === "message" || event.type === "message_reply") {
     const { threadID, messageID, senderID, body, isGroup } = event;
-
     if (senderID === api.getCurrentUserID()) return;
 
     try {
@@ -430,7 +639,6 @@ async function handleEvent(api, event, commands) {
       return api.sendMessage("⛔ هذا الأمر للأدمنز فقط.", threadID);
 
     log.cmd(commandName, senderID, threadID);
-
     let success = true;
     try {
       await cmd.run({ api, event, args, threadID, messageID, senderID, isGroup: !!isGroup });
@@ -439,27 +647,23 @@ async function handleEvent(api, event, commands) {
       log.error(`[${commandName}] ${e.message}`);
       api.sendMessage(`❌ خطأ: ${e.message}`, threadID);
     }
-
     try { await logCommand(senderID, threadID, commandName, args, success); } catch (_) {}
     return;
   }
 
   if (event.type === "typ") {
-    if (io) io.emit("typing", { from: event.from, isTyping: event.isTyping, timestamp: Date.now() });
+    if (io && event.isTyping) io.emit("typing", { from: event.from, isTyping: true, timestamp: Date.now() });
     return;
   }
-
   if (event.type === "message_reaction") {
     if (io) io.emit("reaction", { reaction: event.reaction, timestamp: Date.now() });
     return;
   }
-
   if (event.type === "event") {
     log.event(event.logMessageType || "group_event");
     if (io) io.emit("group-event", { logMessageType: event.logMessageType, timestamp: Date.now() });
     return;
   }
-
   if (event.type === "presence") {
     if (io) io.emit("presence", { userID: event.userID, timestamp: Date.now() });
     return;
