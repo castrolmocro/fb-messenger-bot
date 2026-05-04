@@ -116,4 +116,57 @@ if (fs.existsSync(INDEX_PATH)) {
   console.error("  ✘ fca-unofficial/index.js not found");
 }
 
+// ─── 3. Patch getThreadList.js (null-safe resData check) ─────────────────────
+const GTL_PATH = path.join(FCA_DIR, "src/getThreadList.js");
+if (fs.existsSync(GTL_PATH)) {
+  let src = fs.readFileSync(GTL_PATH, "utf8");
+  const OLD_CHECK = `        if (resData[resData.length - 1].error_results > 0) {
+          throw resData[0].o0.errors;
+        }
+
+        if (resData[resData.length - 1].successful_results === 0) {
+          throw {error: "getThreadList: there was no successful_results", res: resData};
+        }`;
+  const NEW_CHECK = `        var lastItem = resData && resData[resData.length - 1];
+        if (!lastItem || !resData[0] || !resData[0].o0 || !resData[0].o0.data) {
+          throw {error: "getThreadList: unexpected response from Facebook (API may have changed)"};
+        }
+        if (lastItem.error_results > 0) {
+          throw resData[0].o0.errors;
+        }
+        if (lastItem.successful_results === 0) {
+          throw {error: "getThreadList: there was no successful_results", res: resData};
+        }`;
+  if (src.includes(OLD_CHECK)) {
+    src = src.replace(OLD_CHECK, NEW_CHECK);
+    fs.writeFileSync(GTL_PATH, src, "utf8");
+    console.log("  ✔ Patched: getThreadList.js null-safe check");
+  } else {
+    console.warn("  ⚠ getThreadList.js patch already applied or pattern changed");
+  }
+}
+
+// ─── 4. Patch getThreadHistory.js (null-safe resData check) ──────────────────
+const GTH_PATH = path.join(FCA_DIR, "src/getThreadHistory.js");
+if (fs.existsSync(GTH_PATH)) {
+  let src = fs.readFileSync(GTH_PATH, "utf8");
+  const OLD_CHECK = `        if (resData[resData.length - 1].error_results !== 0) {
+          throw new Error("There was an error_result.");
+        }`;
+  const NEW_CHECK = `        var lastResItem = resData && resData[resData.length - 1];
+        if (!lastResItem) {
+          throw new Error("getThreadHistory: unexpected response from Facebook (API may have changed)");
+        }
+        if (lastResItem.error_results !== 0) {
+          throw new Error("There was an error_result.");
+        }`;
+  if (src.includes(OLD_CHECK)) {
+    src = src.replace(OLD_CHECK, NEW_CHECK);
+    fs.writeFileSync(GTH_PATH, src, "utf8");
+    console.log("  ✔ Patched: getThreadHistory.js null-safe check");
+  } else {
+    console.warn("  ⚠ getThreadHistory.js patch already applied or pattern changed");
+  }
+}
+
 console.log("✔ fca-unofficial patch complete\n");
