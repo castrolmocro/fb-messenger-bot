@@ -1,7 +1,9 @@
 node_modules/
 data/
+backups/
 appstate.json
 config.json
 .env
 *.log
 .DS_Store
+account.txt
