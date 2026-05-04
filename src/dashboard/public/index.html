@@ -12,8 +12,9 @@
   --border:#1e1e40;--border2:#252550;
   --accent:#7c6cfc;--accent2:#00d4ff;--accent3:#a78bfa;
   --green:#22c55e;--red:#ef4444;--orange:#f97316;--yellow:#eab308;
+  --blue:#3b82f6;
   --text:#d0d0e8;--muted:#4a4a72;--muted2:#6a6a9a;
-  --sb-w:220px;--hdr:52px;--radius:12px;
+  --sb-w:224px;--hdr:52px;--radius:12px;
 }
 html,body{height:100%;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
 body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:14px}
@@ -24,7 +25,7 @@ button,input,select,textarea{font-family:inherit}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
 .hidden{display:none!important}
 
-/* ══ LOGIN ══════════════════════════════════════════════════ */
+/* LOGIN */
 #login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999;padding:16px}
 .lc{background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:36px 28px;width:100%;max-width:360px;text-align:center}
 .lc-ico{font-size:3rem;margin-bottom:6px}
@@ -37,13 +38,13 @@ button,input,select,textarea{font-family:inherit}
 .lc-err{color:var(--red);font-size:.75rem;margin-top:8px;min-height:18px}
 .lc-copy{color:var(--muted);font-size:.64rem;margin-top:18px}
 
-/* ══ LAYOUT ═════════════════════════════════════════════════ */
+/* LAYOUT */
 #app{display:flex;min-height:100vh}
 #sidebar{width:var(--sb-w);background:var(--sb);border-left:1px solid var(--border);display:flex;flex-direction:column;position:fixed;right:0;top:0;bottom:0;z-index:100;transition:transform .3s cubic-bezier(.4,0,.2,1)}
-#main{margin-right:var(--sb-w);flex:1;display:flex;flex-direction:column;min-height:100vh;transition:margin .3s}
+#main{margin-right:var(--sb-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
 #overlay{position:fixed;inset:0;background:#000a;z-index:99;display:none}
 
-/* ══ MOBILE ══════════════════════════════════════════════════ */
+/* MOBILE */
 #menu-btn{display:none;position:fixed;top:10px;left:10px;z-index:200;background:var(--panel);border:1px solid var(--border);border-radius:9px;width:38px;height:38px;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem;color:var(--text)}
 @media(max-width:768px){
   #sidebar{transform:translateX(-100%);right:auto;left:0;border-left:none;border-right:1px solid var(--border)}
@@ -57,7 +58,7 @@ button,input,select,textarea{font-family:inherit}
   .page-content{padding:14px!important}
 }
 
-/* ══ SIDEBAR ════════════════════════════════════════════════ */
+/* SIDEBAR */
 .sb-brand{padding:16px 14px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px;flex-shrink:0}
 .sb-brand .logo{font-size:1.5rem}
 .sb-brand .info .name{font-size:.95rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
@@ -67,52 +68,61 @@ button,input,select,textarea{font-family:inherit}
 #sb-dot.online{background:var(--green);box-shadow:0 0 8px var(--green)}
 #sb-dot.error{background:var(--orange);box-shadow:0 0 8px var(--orange)}
 #sb-dot.offline{background:var(--red)}
-#sb-msg{font-size:.68rem;color:var(--text);line-height:1.35;word-break:break-all;flex:1}
+#sb-dot.connecting{background:var(--yellow);animation:pulse .8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+#sb-msg{font-size:.67rem;color:var(--text);line-height:1.35;word-break:break-all;flex:1}
 nav{flex:1;overflow-y:auto;padding:4px 0}
 .nav-section{padding:8px 12px 3px;font-size:.58rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
-.nav-item{display:flex;align-items:center;gap:9px;padding:9px 14px;cursor:pointer;font-size:.82rem;color:var(--muted2);transition:all .15s;border-right:3px solid transparent;user-select:none;border-left:3px solid transparent}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 14px;cursor:pointer;font-size:.82rem;color:var(--muted2);transition:all .15s;border-right:3px solid transparent;border-left:3px solid transparent;user-select:none}
 .nav-item:hover{color:var(--text);background:#ffffff07}
 .nav-item.active{color:var(--accent2);background:#00d4ff0d;border-left-color:var(--accent2)}
 .nav-item .ni{font-size:1rem;width:18px;text-align:center;flex-shrink:0}
 .sb-footer{padding:10px 12px;border-top:1px solid var(--border);flex-shrink:0}
-.sb-footer .uid-row{font-size:.64rem;color:var(--muted);margin-bottom:6px;word-break:break-all}
+.sb-footer .uid-row{font-size:.63rem;color:var(--muted);margin-bottom:5px;word-break:break-all}
 .sb-footer .uid-row span{color:var(--accent2)}
 .logout-btn{width:100%;padding:7px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted2);font-size:.72rem;cursor:pointer;transition:all .2s}
 .logout-btn:hover{background:var(--red);color:#fff;border-color:var(--red)}
 
-/* ══ HEADER ═════════════════════════════════════════════════ */
+/* HEADER */
 .page-header{padding:20px 20px 0;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .page-title{font-size:1.15rem;font-weight:800;color:#fff;display:flex;align-items:center;gap:8px}
 .page-desc{font-size:.72rem;color:var(--muted2);margin-top:2px}
 .page-content{padding:16px 20px 30px;flex:1}
 
-/* ══ CARDS ══════════════════════════════════════════════════ */
+/* CARDS */
 .cards-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
 .stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;align-items:flex-start;gap:12px;transition:border-color .2s}
 .stat-card:hover{border-color:var(--border2)}
 .stat-card .ico{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
 .stat-card .data .val{font-size:1.4rem;font-weight:800;color:#fff;line-height:1}
 .stat-card .data .lbl{font-size:.65rem;color:var(--muted2);margin-top:3px}
-.stat-card .data .sub{font-size:.62rem;color:var(--muted);margin-top:2px}
 
-/* ══ PANELS ═════════════════════════════════════════════════ */
+/* PANELS */
 .panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:14px}
 .panel-title{font-size:.82rem;font-weight:700;color:#fff;margin-bottom:14px;display:flex;align-items:center;gap:7px}
 .panel-title .pt-icon{font-size:1rem}
 
-/* ══ COOKIE TABS ════════════════════════════════════════════ */
+/* COOKIE */
 .cookie-tabs{display:flex;gap:4px;margin-bottom:14px;background:#080816;padding:4px;border-radius:10px;border:1px solid var(--border)}
-.cookie-tab{flex:1;padding:7px 6px;border-radius:8px;border:none;background:transparent;color:var(--muted2);font-size:.75rem;cursor:pointer;transition:all .2s;font-weight:600;white-space:nowrap}
+.cookie-tab{flex:1;padding:7px 4px;border-radius:8px;border:none;background:transparent;color:var(--muted2);font-size:.72rem;cursor:pointer;transition:all .2s;font-weight:600}
 .cookie-tab.active{background:var(--accent);color:#fff}
 .cookie-pane{display:none}
 .cookie-pane.active{display:block}
-.cookie-hint{font-size:.68rem;color:var(--muted);background:#08081a;border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:10px;line-height:1.6}
-.cookie-hint code{background:#1a1a40;padding:1px 4px;border-radius:4px;font-size:.65rem;color:var(--accent2)}
-textarea.ck-input{width:100%;min-height:130px;background:#080816;border:1px solid var(--border);border-radius:10px;color:var(--text);padding:11px 12px;font-size:.78rem;resize:vertical;outline:none;transition:border .2s;font-family:'Courier New',monospace;line-height:1.5}
+.cookie-hint{font-size:.68rem;color:var(--muted);background:#08081a;border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:10px;line-height:1.65}
+.cookie-hint code{background:#1a1a40;padding:1px 4px;border-radius:4px;font-size:.64rem;color:var(--accent2)}
+textarea.ck-input{width:100%;min-height:130px;background:#080816;border:1px solid var(--border);border-radius:10px;color:var(--text);padding:11px 12px;font-size:.77rem;resize:vertical;outline:none;transition:border .2s;font-family:'Courier New',monospace;line-height:1.5}
 textarea.ck-input:focus{border-color:var(--accent)}
 input.ck-input{width:100%;background:#080816;border:1px solid var(--border);border-radius:10px;color:var(--text);padding:11px 12px;font-size:.82rem;outline:none;transition:border .2s}
 input.ck-input:focus{border-color:var(--accent)}
 .ck-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.ck-status{margin-top:10px;padding:9px 12px;border-radius:9px;font-size:.75rem;display:none;align-items:flex-start;gap:8px;line-height:1.5}
+.ck-status.show{display:flex}
+.ck-status.ok{background:#052310;border:1px solid #22c55e40;color:var(--green)}
+.ck-status.warn{background:#1a1000;border:1px solid #f9731640;color:var(--orange)}
+.ck-status.err{background:#1a0505;border:1px solid #ef444440;color:var(--red)}
+.ck-status.info{background:#050a1a;border:1px solid #00d4ff40;color:var(--accent2)}
+
+/* BUTTONS */
 .btn{padding:9px 16px;border-radius:9px;border:none;font-size:.8rem;font-weight:700;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
 .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
 .btn-primary:hover{opacity:.85}
@@ -122,16 +132,11 @@ input.ck-input:focus{border-color:var(--accent)}
 .btn-danger:hover{opacity:.85}
 .btn-success{background:var(--green);color:#fff}
 .btn-success:hover{opacity:.85}
+.btn-warning{background:var(--orange);color:#fff}
 .btn-sm{padding:6px 11px;font-size:.73rem;border-radius:7px}
 .btn:disabled{opacity:.45;cursor:not-allowed}
-.ck-status{margin-top:10px;padding:9px 12px;border-radius:9px;font-size:.75rem;display:none;align-items:flex-start;gap:8px;line-height:1.5}
-.ck-status.show{display:flex}
-.ck-status.ok{background:#052310;border:1px solid #22c55e40;color:var(--green)}
-.ck-status.warn{background:#1a1000;border:1px solid #f9731640;color:var(--orange)}
-.ck-status.err{background:#1a0505;border:1px solid #ef444440;color:var(--red)}
-.ck-status.info{background:#050a1a;border:1px solid #00d4ff40;color:var(--accent2)}
 
-/* ══ PROTECTION ═════════════════════════════════════════════ */
+/* PROTECTION */
 .prot-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media(max-width:520px){.prot-grid{grid-template-columns:1fr}}
 .prot-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;align-items:center;gap:10px}
@@ -146,10 +151,10 @@ input.ck-input:focus{border-color:var(--accent)}
 .toggle-sw .thumb{position:absolute;top:3px;right:3px;width:15px;height:15px;border-radius:50%;background:#fff;transition:transform .25s;pointer-events:none}
 .toggle-sw input:checked+.track+.thumb,.toggle-sw input:checked~.thumb{transform:translateX(-17px)}
 
-/* ══ COMMANDS ════════════════════════════════════════════════ */
+/* COMMANDS */
 .cmd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
 .cmd-card{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:11px;display:flex;align-items:center;gap:9px;transition:border-color .2s;cursor:pointer}
-.cmd-card:hover{border-color:var(--border2)}
+.cmd-card:hover{border-color:var(--accent2)}
 .cmd-card .cc-ico{width:32px;height:32px;border-radius:8px;background:#1a1a40;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
 .cmd-card .cc-name{font-size:.82rem;font-weight:700;color:#fff}
 .cmd-card .cc-desc{font-size:.64rem;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -157,57 +162,94 @@ input.ck-input:focus{border-color:var(--accent)}
 .badge-admin{background:#f9731620;color:var(--orange)}
 .badge-owner{background:#ef444420;color:var(--red)}
 
-/* ══ SEND MSG ════════════════════════════════════════════════ */
+/* MODAL */
+.modal{position:fixed;inset:0;background:#000b;z-index:500;display:none;align-items:center;justify-content:center;padding:16px}
+.modal.open{display:flex}
+.modal-box{background:var(--panel);border:1px solid var(--border);border-radius:16px;width:100%;max-width:760px;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column}
+.modal-hdr{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-hdr h3{font-size:.95rem;font-weight:800;color:#fff}
+.modal-close{background:transparent;border:none;color:var(--muted2);font-size:1.2rem;cursor:pointer;padding:4px 8px;border-radius:6px}
+.modal-close:hover{background:var(--border);color:#fff}
+.modal-body{padding:18px;flex:1}
+.modal-footer{padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;flex-shrink:0}
+
+/* CODE EDITOR */
+.code-editor{width:100%;min-height:320px;background:#080816;border:1px solid var(--border);border-radius:10px;color:#e8e8ff;padding:12px;font-size:.78rem;resize:vertical;outline:none;transition:border .2s;font-family:'Courier New',monospace;line-height:1.6;tab-size:2}
+.code-editor:focus{border-color:var(--accent)}
+
+/* FORM */
+.form-row{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.form-row label{font-size:.72rem;color:var(--muted2);font-weight:600}
+.form-row input,.form-row select,.form-row textarea{background:#080816;border:1px solid var(--border);border-radius:9px;color:var(--text);padding:9px 12px;font-size:.82rem;outline:none;transition:border .2s;width:100%}
+.form-row input:focus,.form-row select:focus,.form-row textarea:focus{border-color:var(--accent)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:480px){.form-grid{grid-template-columns:1fr}}
+
+/* LOG */
+#msg-log{max-height:380px;overflow-y:auto;display:flex;flex-direction:column;gap:5px}
+.log-item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:.72rem;line-height:1.5}
+.log-item .li-meta{color:var(--muted);margin-bottom:2px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.log-item .li-body{color:var(--text);word-break:break-word}
+.li-thread{color:var(--accent2);font-size:.67rem}
+.li-name{color:var(--accent3);font-weight:600}
+.li-group{background:#7c6cfc20;color:var(--accent3);padding:1px 5px;border-radius:4px;font-size:.6rem}
+.li-cmd{background:#22c55e20;color:var(--green);padding:1px 5px;border-radius:4px;font-size:.6rem}
+
+/* MEDIA GRID */
+.media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.media-card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;transition:border-color .2s;position:relative}
+.media-card:hover{border-color:var(--accent2)}
+.media-card .mc-thumb{height:90px;display:flex;align-items:center;justify-content:center;background:#080816;overflow:hidden}
+.media-card .mc-thumb img{width:100%;height:100%;object-fit:cover}
+.media-card .mc-thumb .mc-ico{font-size:2rem}
+.media-card .mc-info{padding:7px 8px;font-size:.65rem}
+.media-card .mc-name{color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
+.media-card .mc-size{color:var(--muted)}
+.media-card .mc-del{position:absolute;top:4px;left:4px;background:#ef4444cc;border:none;border-radius:5px;color:#fff;padding:2px 6px;font-size:.65rem;cursor:pointer;display:none}
+.media-card:hover .mc-del{display:block}
+.media-url-badge{background:#1a1a40;border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:.63rem;color:var(--accent2);font-family:monospace;cursor:pointer;word-break:break-all;display:inline-block;margin-top:4px}
+.media-url-badge:hover{background:var(--accent);color:#fff}
+
+/* UPLOAD DROP ZONE */
+.drop-zone{border:2px dashed var(--border2);border-radius:12px;padding:32px 20px;text-align:center;cursor:pointer;transition:all .2s;color:var(--muted2)}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--accent);color:var(--accent);background:#7c6cfc08}
+.drop-zone .dz-ico{font-size:2.5rem;margin-bottom:8px}
+.drop-zone .dz-txt{font-size:.8rem;font-weight:600}
+.drop-zone .dz-sub{font-size:.68rem;color:var(--muted);margin-top:4px}
+
+/* SEND */
 .send-form{display:flex;flex-direction:column;gap:10px}
 .send-form input,.send-form textarea{background:#080816;border:1px solid var(--border);border-radius:9px;color:var(--text);padding:10px 12px;font-size:.82rem;outline:none;transition:border .2s;width:100%}
 .send-form input:focus,.send-form textarea:focus{border-color:var(--accent)}
 .send-form textarea{min-height:80px;resize:vertical}
 
-/* ══ LOG ═════════════════════════════════════════════════════ */
-#msg-log{max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:5px}
-.log-item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:.72rem;line-height:1.5}
-.log-item .li-meta{color:var(--muted);margin-bottom:2px;display:flex;gap:6px;flex-wrap:wrap}
-.log-item .li-body{color:var(--text)}
-.log-item .li-thread{color:var(--accent2)}
-.log-item .li-group{background:#7c6cfc20;color:var(--accent3);padding:1px 5px;border-radius:4px;font-size:.6rem}
-
-/* ══ ADMIN TABLE ═════════════════════════════════════════════ */
+/* ADMIN TABLE */
 .admin-list{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
 .admin-row{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--border);border-radius:9px;padding:8px 12px;gap:10px}
 .admin-uid{font-family:monospace;font-size:.78rem;color:var(--accent2);flex:1;word-break:break-all}
 .admin-badge{font-size:.63rem;padding:2px 7px;border-radius:5px;background:#22c55e20;color:var(--green)}
 .admin-badge.owner{background:#f9731620;color:var(--orange)}
 
-/* ══ FORM ════════════════════════════════════════════════════ */
-.form-row{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
-.form-row label{font-size:.72rem;color:var(--muted2);font-weight:600}
-.form-row input,.form-row select{background:#080816;border:1px solid var(--border);border-radius:9px;color:var(--text);padding:9px 12px;font-size:.82rem;outline:none;transition:border .2s}
-.form-row input:focus,.form-row select:focus{border-color:var(--accent)}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media(max-width:480px){.form-grid{grid-template-columns:1fr}}
-
-/* ══ TOAST ═══════════════════════════════════════════════════ */
+/* TOAST */
 #toast-wrap{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:7px;align-items:center;pointer-events:none;width:calc(100% - 32px);max-width:380px}
 .toast{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:10px 16px;font-size:.8rem;animation:toastIn .3s ease;box-shadow:0 8px 32px #0008;text-align:center}
 .toast.ok{border-color:#22c55e60;color:var(--green)}
 .toast.err{border-color:#ef444460;color:var(--red)}
 .toast.info{border-color:#00d4ff60;color:var(--accent2)}
+.toast.warn{border-color:#f9731660;color:var(--orange)}
 @keyframes toastIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 
-/* ══ SPINNER ═════════════════════════════════════════════════ */
 .spin{display:inline-block;width:14px;height:14px;border:2px solid #ffffff40;border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* ══ MISC ════════════════════════════════════════════════════ */
-.dot-sep{color:var(--muted);margin:0 4px;font-size:.7em}
-.uptime-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:6px}
-.uptime-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px;width:0%;transition:width .8s}
 .divider{border:none;border-top:1px solid var(--border);margin:14px 0}
+.tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:6px;font-size:.65rem;font-weight:700;gap:4px}
+.tag-green{background:#22c55e20;color:var(--green)}
+.tag-red{background:#ef444420;color:var(--red)}
+.tag-blue{background:#3b82f620;color:var(--blue)}
 </style>
 </head>
 <body>
 
-<!-- MENU BTN (mobile) -->
 <button id="menu-btn" onclick="toggleSidebar()">☰</button>
 <div id="overlay" onclick="closeSidebar()"></div>
 
@@ -216,392 +258,426 @@ input.ck-input:focus{border-color:var(--accent)}
   <div class="lc">
     <div class="lc-ico">🤖</div>
     <div class="lc-title">jarfis Bot</div>
-    <div class="lc-sub">لوحة التحكم المتكاملة — v3.0</div>
-    <input type="password" id="login-pw" placeholder="كلمة المرور" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <div class="lc-sub">لوحة التحكم المتكاملة — v3.1</div>
+    <input type="password" id="login-pw" placeholder="كلمة المرور" autocomplete="current-password"/>
     <button class="lc-btn" onclick="doLogin()">دخول</button>
     <div class="lc-err" id="login-err"></div>
-    <div class="lc-copy">© 2026 djamel · Jarfis Bot v3.0</div>
+    <div class="lc-copy">© 2026 djamel · Jarfis Bot v3.1</div>
   </div>
 </div>
 
 <!-- APP -->
 <div id="app" class="hidden">
 
-  <!-- SIDEBAR -->
-  <div id="sidebar">
-    <div class="sb-brand">
-      <div class="logo">🤖</div>
-      <div class="info">
-        <div class="name">jarfis Bot</div>
-        <div class="ver">v3.0.0 · White Engine</div>
-      </div>
-    </div>
-    <div class="sb-status-box">
-      <div id="sb-dot"></div>
-      <div id="sb-msg">جارٍ الاتصال…</div>
-    </div>
-    <nav>
-      <div class="nav-section">الرئيسية</div>
-      <div class="nav-item active" onclick="goto('dashboard')"><span class="ni">📊</span> لوحة التحكم</div>
-      <div class="nav-item" onclick="goto('cookies')"><span class="ni">🍪</span> الكوكيز</div>
-      <div class="nav-item" onclick="goto('protection')"><span class="ni">🛡️</span> الحماية</div>
-      <div class="nav-section">إدارة</div>
-      <div class="nav-item" onclick="goto('commands')"><span class="ni">⚙️</span> الأوامر</div>
-      <div class="nav-item" onclick="goto('send')"><span class="ni">💬</span> إرسال رسالة</div>
-      <div class="nav-item" onclick="goto('log')"><span class="ni">📝</span> سجل الرسائل</div>
-      <div class="nav-section">إعدادات</div>
-      <div class="nav-item" onclick="goto('admins')"><span class="ni">👑</span> الأدمنز</div>
-      <div class="nav-item" onclick="goto('config')"><span class="ni">🔧</span> الإعدادات</div>
-    </nav>
-    <div class="sb-footer">
-      <div class="uid-row">UID: <span id="sb-uid">—</span></div>
-      <div class="uid-row">RAM: <span id="sb-ram">—</span> MB · Node <span id="sb-node">—</span></div>
-      <button class="logout-btn" onclick="doLogout()">تسجيل الخروج</button>
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div class="sb-brand">
+    <div class="logo">🤖</div>
+    <div class="info">
+      <div class="name">jarfis Bot</div>
+      <div class="ver">v3.1 · White Engine</div>
     </div>
   </div>
+  <div class="sb-status-box">
+    <div id="sb-dot"></div>
+    <div id="sb-msg">جارٍ الاتصال…</div>
+  </div>
+  <nav>
+    <div class="nav-section">الرئيسية</div>
+    <div class="nav-item active" data-page="dashboard" onclick="goto('dashboard')"><span class="ni">📊</span> لوحة التحكم</div>
+    <div class="nav-item" data-page="cookies" onclick="goto('cookies')"><span class="ni">🍪</span> الكوكيز</div>
+    <div class="nav-item" data-page="protection" onclick="goto('protection')"><span class="ni">🛡️</span> الحماية</div>
+    <div class="nav-section">الإدارة</div>
+    <div class="nav-item" data-page="commands" onclick="goto('commands')"><span class="ni">⚙️</span> الأوامر</div>
+    <div class="nav-item" data-page="media" onclick="goto('media')"><span class="ni">🖼️</span> الوسائط</div>
+    <div class="nav-item" data-page="send" onclick="goto('send')"><span class="ni">💬</span> إرسال رسالة</div>
+    <div class="nav-item" data-page="log" onclick="goto('log')"><span class="ni">📝</span> سجل الرسائل</div>
+    <div class="nav-section">الإعدادات</div>
+    <div class="nav-item" data-page="admins" onclick="goto('admins')"><span class="ni">👑</span> الأدمنز</div>
+    <div class="nav-item" data-page="config" onclick="goto('config')"><span class="ni">🔧</span> الإعدادات</div>
+  </nav>
+  <div class="sb-footer">
+    <div class="uid-row">UID: <span id="sb-uid">—</span></div>
+    <div class="uid-row">RAM: <span id="sb-ram">—</span> MB · Node <span id="sb-node">—</span></div>
+    <button class="logout-btn" onclick="doLogout()">تسجيل الخروج</button>
+  </div>
+</div>
 
-  <!-- MAIN -->
-  <div id="main">
+<!-- MAIN -->
+<div id="main">
 
-    <!-- ══ DASHBOARD ══ -->
-    <div id="page-dashboard" class="page">
-      <div class="page-header">
-        <div><div class="page-title"><span>📊</span> لوحة التحكم</div><div class="page-desc">حالة البوت الفورية</div></div>
-        <button class="btn btn-outline btn-sm" onclick="loadStats()">🔄 تحديث</button>
-      </div>
-      <div class="page-content">
-        <div class="cards-grid">
-          <div class="stat-card"><div class="ico" style="background:#7c6cfc20;color:var(--accent)">👥</div><div class="data"><div class="val" id="st-users">—</div><div class="lbl">مستخدم</div></div></div>
-          <div class="stat-card"><div class="ico" style="background:#00d4ff20;color:var(--accent2)">💬</div><div class="data"><div class="val" id="st-threads">—</div><div class="lbl">محادثة</div></div></div>
-          <div class="stat-card"><div class="ico" style="background:#22c55e20;color:var(--green)">⚡</div><div class="data"><div class="val" id="st-cmds">—</div><div class="lbl">أمر مُنفَّذ</div></div></div>
-          <div class="stat-card"><div class="ico" style="background:#f9731620;color:var(--orange)">🕐</div><div class="data"><div class="val" id="st-uptime">—</div><div class="lbl">وقت التشغيل</div></div></div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;flex-wrap:wrap">
-          <div class="panel">
-            <div class="panel-title"><span class="pt-icon">🤖</span> معلومات البوت</div>
-            <div style="display:flex;flex-direction:column;gap:8px">
-              <div style="display:flex;justify-content:space-between;align-items:center;font-size:.78rem"><span style="color:var(--muted2)">الاسم</span><span id="inf-name" style="color:#fff;font-weight:700">—</span></div>
-              <div style="display:flex;justify-content:space-between;align-items:center;font-size:.78rem"><span style="color:var(--muted2)">البادئة</span><span id="inf-prefix" style="color:var(--accent2);font-family:monospace;font-size:1rem">—</span></div>
-              <div style="display:flex;justify-content:space-between;align-items:center;font-size:.78rem"><span style="color:var(--muted2)">الأوامر</span><span id="inf-cmdcount" style="color:#fff;font-weight:700">—</span></div>
-              <div style="display:flex;justify-content:space-between;align-items:center;font-size:.78rem"><span style="color:var(--muted2)">الأدمنز</span><span id="inf-admins" style="color:#fff">—</span></div>
-              <div style="display:flex;justify-content:space-between;align-items:center;font-size:.78rem"><span style="color:var(--muted2)">الذاكرة</span><span id="inf-ram" style="color:var(--yellow)">—</span></div>
-              <div style="display:flex;justify-content:space-between;align-items:center;font-size:.78rem"><span style="color:var(--muted2)">Node.js</span><span id="inf-node" style="color:var(--muted2)">—</span></div>
-            </div>
-          </div>
-          <div class="panel">
-            <div class="panel-title"><span class="pt-icon">🛡️</span> الحماية السريعة</div>
-            <div id="quick-prot" style="display:flex;flex-direction:column;gap:8px">
-              <div class="prot-card"><span class="pc-ico">⌨️</span><div class="pc-info"><div class="pc-name">محاكاة الكتابة</div><div class="pc-desc">Human Typing</div></div><label class="toggle-sw"><input type="checkbox" id="qt-typing" onchange="toggleProt('humanTyping',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
-              <div class="prot-card"><span class="pc-ico">🕵️</span><div class="pc-info"><div class="pc-name">وضع التخفي</div><div class="pc-desc">Stealth Engine</div></div><label class="toggle-sw"><input type="checkbox" id="qt-stealth" onchange="toggleProt('stealth',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
-              <div class="prot-card"><span class="pc-ico">📡</span><div class="pc-info"><div class="pc-name">فحص MQTT</div><div class="pc-desc">Auto-reconnect</div></div><label class="toggle-sw"><input type="checkbox" id="qt-mqtt" onchange="toggleProt('mqttHealth',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
-              <div class="prot-card"><span class="pc-ico">💓</span><div class="pc-info"><div class="pc-name">Keep-Alive</div><div class="pc-desc">نبضة كل 8-18 دقيقة</div></div><label class="toggle-sw"><input type="checkbox" id="qt-keepalive" onchange="toggleProt('keepAlive',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
-            </div>
-          </div>
-        </div>
-        <style>@media(max-width:600px){#page-dashboard .page-content>div:nth-child(2){grid-template-columns:1fr!important}}</style>
-      </div>
+<!-- ══ DASHBOARD ══ -->
+<div id="page-dashboard" class="page">
+  <div class="page-header">
+    <div><div class="page-title"><span>📊</span> لوحة التحكم</div><div class="page-desc">حالة البوت الفورية</div></div>
+    <button class="btn btn-outline btn-sm" onclick="loadStats()">🔄 تحديث</button>
+  </div>
+  <div class="page-content">
+    <div class="cards-grid">
+      <div class="stat-card"><div class="ico" style="background:#7c6cfc20;color:var(--accent)">👥</div><div class="data"><div class="val" id="st-users">—</div><div class="lbl">مستخدم</div></div></div>
+      <div class="stat-card"><div class="ico" style="background:#00d4ff20;color:var(--accent2)">💬</div><div class="data"><div class="val" id="st-threads">—</div><div class="lbl">محادثة</div></div></div>
+      <div class="stat-card"><div class="ico" style="background:#22c55e20;color:var(--green)">⚡</div><div class="data"><div class="val" id="st-cmds">—</div><div class="lbl">أمر مُنفَّذ</div></div></div>
+      <div class="stat-card"><div class="ico" style="background:#f9731620;color:var(--orange)">🕐</div><div class="data"><div class="val" id="st-uptime">—</div><div class="lbl">وقت التشغيل</div></div></div>
     </div>
-
-    <!-- ══ COOKIES ══ -->
-    <div id="page-cookies" class="page hidden">
-      <div class="page-header">
-        <div><div class="page-title"><span>🍪</span> إدارة الكوكيز</div><div class="page-desc">رفع كوكيز c3c / Cookie-Editor / JSON / String / Token</div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div class="panel">
+        <div class="panel-title"><span class="pt-icon">🤖</span> معلومات البوت</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:.78rem"><span style="color:var(--muted2)">الاسم</span><span id="inf-name" style="color:#fff;font-weight:700">—</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:.78rem"><span style="color:var(--muted2)">البادئة</span><span id="inf-prefix" style="color:var(--accent2);font-family:monospace;font-size:1rem">—</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:.78rem"><span style="color:var(--muted2)">الأوامر</span><span id="inf-cmdcount" style="color:#fff;font-weight:700">—</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:.78rem"><span style="color:var(--muted2)">الأدمنز</span><span id="inf-admins" style="color:#fff">—</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:.78rem"><span style="color:var(--muted2)">الذاكرة</span><span id="inf-ram" style="color:var(--yellow)">—</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:.78rem"><span style="color:var(--muted2)">Node.js</span><span id="inf-node" style="color:var(--muted2)">—</span></div>
+        </div>
       </div>
-      <div class="page-content">
-        <!-- Current cookie info -->
-        <div class="panel">
-          <div class="panel-title"><span class="pt-icon">📋</span> الحالة الراهنة</div>
-          <div id="ck-current" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
-            <div style="font-size:.78rem;color:var(--muted)">جارٍ التحميل…</div>
-          </div>
-        </div>
-
-        <!-- Cookie input tabs -->
-        <div class="panel">
-          <div class="panel-title"><span class="pt-icon">⬆️</span> رفع كوكيز جديدة</div>
-
-          <div class="cookie-tabs">
-            <button class="cookie-tab active" onclick="setCkTab('json',this)">📋 JSON</button>
-            <button class="cookie-tab" onclick="setCkTab('string',this)">🔤 نص</button>
-            <button class="cookie-tab" onclick="setCkTab('token',this)">🔑 توكن</button>
-          </div>
-
-          <!-- JSON TAB -->
-          <div class="cookie-pane active" id="ck-pane-json">
-            <div class="cookie-hint">
-              <strong>📋 صيغة JSON</strong> — مصفوفة من الكوكيز مثل c3c / Cookie-Editor<br>
-              <code>[{"key":"c_user","value":"123..."},{"key":"xs","value":"abc..."},...]</code><br>
-              أو الصيغة الجديدة: <code>[{"name":"c_user","value":"123..."}]</code>
-            </div>
-            <textarea class="ck-input" id="ck-json-input" placeholder='[{"key":"c_user","value":"..."},{"key":"xs","value":"..."},{"key":"datr","value":"..."}]'></textarea>
-            <div class="ck-actions">
-              <button class="btn btn-primary" onclick="submitCookies('json')"><span class="spin" id="ck-json-spin" style="display:none"></span>💾 حفظ وتحقق</button>
-              <button class="btn btn-outline" onclick="validateOnly('json')">🔍 تحقق فقط</button>
-              <button class="btn btn-outline" onclick="clearInput('ck-json-input')">🗑️ مسح</button>
-            </div>
-          </div>
-
-          <!-- STRING TAB -->
-          <div class="cookie-pane" id="ck-pane-string">
-            <div class="cookie-hint">
-              <strong>🔤 نص الكوكيز</strong> — انسخ كوكيز من المتصفح مباشرة<br>
-              <code>c_user=123456; xs=abc:def; datr=xxx; sb=yyy</code><br>
-              يجب أن تحتوي على <code>c_user</code> و<code>xs</code> على الأقل
-            </div>
-            <textarea class="ck-input" id="ck-str-input" placeholder="c_user=123456789; xs=abc:def:ghi; datr=xxxxx; sb=yyyy"></textarea>
-            <div class="ck-actions">
-              <button class="btn btn-primary" onclick="submitCookies('string')"><span class="spin" id="ck-str-spin" style="display:none"></span>💾 حفظ وتحقق</button>
-              <button class="btn btn-outline" onclick="validateOnly('string')">🔍 تحقق فقط</button>
-              <button class="btn btn-outline" onclick="clearInput('ck-str-input')">🗑️ مسح</button>
-            </div>
-          </div>
-
-          <!-- TOKEN TAB -->
-          <div class="cookie-pane" id="ck-pane-token">
-            <div class="cookie-hint">
-              <strong>🔑 توكن Facebook</strong> — توكن يبدأ بـ EAAAA<br>
-              <code>EAAAA6z...لسنا مسؤولين عن صحة التوكن</code><br>
-              سيتم تحويل التوكن تلقائياً إلى كوكيز صالحة
-            </div>
-            <input class="ck-input" id="ck-tok-input" type="text" placeholder="EAAAA6z8X4Ba..."/>
-            <div class="ck-actions">
-              <button class="btn btn-primary" onclick="submitCookies('token')"><span class="spin" id="ck-tok-spin" style="display:none"></span>🔄 تحويل وحفظ</button>
-              <button class="btn btn-outline" onclick="clearInput('ck-tok-input')">🗑️ مسح</button>
-            </div>
-          </div>
-
-          <div class="ck-status" id="ck-status"></div>
-        </div>
-
-        <!-- m_sess guide -->
-        <div class="panel" style="border-color:#eab30840">
-          <div class="panel-title"><span class="pt-icon">📖</span> كيف تحصل على كوكيز كاملة مع m_sess؟</div>
-          <div style="font-size:.74rem;color:var(--muted2);line-height:1.9">
-            <div style="background:#0d0d20;border:1px solid var(--border);border-radius:9px;padding:12px;margin-bottom:10px">
-              <div style="color:var(--yellow);font-weight:700;margin-bottom:6px">⚠️ بدون m_sess لن يستقبل البوت رسائل!</div>
-              <div><b style="color:#fff">الطريقة 1 — c3c Cookie Manager:</b><br>
-              1. افتح <span style="color:var(--accent2)">messenger.com</span> في المتصفح وسجّل دخول<br>
-              2. افتح <span style="color:var(--accent2)">facebook.com</span> في نفس المتصفح<br>
-              3. استخدم c3c أو Cookie-Editor لتصدير كوكيز <b>كلا الموقعين</b><br>
-              4. ادمجهما في مصفوفة JSON واحدة وارفعها هنا<br>
-              5. تأكد أن المصفوفة تحتوي على: <code>c_user</code>, <code>xs</code>, <code>m_sess</code>, <code>datr</code>
-              </div>
-            </div>
-            <div style="background:#0d0d20;border:1px solid var(--border);border-radius:9px;padding:12px">
-              <div><b style="color:#fff">الطريقة 2 — نص الكوكيز المباشر:</b><br>
-              1. افتح DevTools (F12) على <span style="color:var(--accent2)">messenger.com</span><br>
-              2. اذهب إلى Network → أي طلب → Headers → Request Headers<br>
-              3. انسخ قيمة <code>Cookie:</code> بالكامل<br>
-              4. الصقها في تبويب "نص" أعلاه
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Danger zone -->
-        <div class="panel">
-          <div class="panel-title"><span class="pt-icon">⚠️</span> منطقة الخطر</div>
-          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
-            <div style="font-size:.76rem;color:var(--muted)">حذف الكوكيز المحفوظة نهائياً وقطع اتصال البوت</div>
-            <button class="btn btn-danger btn-sm" onclick="deleteCookies()">🗑️ حذف الكوكيز</button>
-          </div>
+      <div class="panel">
+        <div class="panel-title"><span class="pt-icon">🛡️</span> تبديل سريع</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div class="prot-card"><span class="pc-ico">⌨️</span><div class="pc-info"><div class="pc-name">محاكاة الكتابة</div><div class="pc-desc">Human Typing</div></div><label class="toggle-sw"><input type="checkbox" id="qt-typing" onchange="toggleProt('humanTyping',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
+          <div class="prot-card"><span class="pc-ico">🕵️</span><div class="pc-info"><div class="pc-name">التخفي</div><div class="pc-desc">Stealth Engine</div></div><label class="toggle-sw"><input type="checkbox" id="qt-stealth" onchange="toggleProt('stealth',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
+          <div class="prot-card"><span class="pc-ico">💓</span><div class="pc-info"><div class="pc-name">Keep-Alive</div><div class="pc-desc">نبضة دورية</div></div><label class="toggle-sw"><input type="checkbox" id="qt-keepalive" onchange="toggleProt('keepAlive',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
         </div>
       </div>
     </div>
+    <style>@media(max-width:600px){#page-dashboard .page-content>div:nth-child(2){grid-template-columns:1fr!important}}</style>
+  </div>
+</div>
 
-    <!-- ══ PROTECTION ══ -->
-    <div id="page-protection" class="page hidden">
-      <div class="page-header">
-        <div><div class="page-title"><span>🛡️</span> أنظمة الحماية</div><div class="page-desc">WHITE Engine — حماية الحساب</div></div>
-        <button class="btn btn-outline btn-sm" onclick="loadProtection()">🔄 تحديث</button>
+<!-- ══ COOKIES ══ -->
+<div id="page-cookies" class="page hidden">
+  <div class="page-header">
+    <div><div class="page-title"><span>🍪</span> إدارة الكوكيز</div><div class="page-desc">رفع الكوكيز — تغيير الحساب فوراً بدون إعادة تشغيل</div></div>
+  </div>
+  <div class="page-content">
+    <!-- Status -->
+    <div class="panel">
+      <div class="panel-title"><span class="pt-icon">📋</span> الحساب الحالي</div>
+      <div id="ck-current"><div style="font-size:.78rem;color:var(--muted)">جارٍ التحميل…</div></div>
+    </div>
+
+    <!-- Input -->
+    <div class="panel">
+      <div class="panel-title"><span class="pt-icon">⬆️</span> رفع كوكيز جديدة</div>
+      <div style="background:#0a1a0a;border:1px solid #22c55e30;border-radius:9px;padding:10px 12px;margin-bottom:14px;font-size:.74rem;color:#22c55e;line-height:1.7">
+        ✅ <strong>لا يحتاج m_sess</strong> — ارفع كوكيز facebook.com العادية وسيعمل البوت بـ HTTP Long-Poll تلقائياً.<br>
+        🔄 <strong>تغيير فوري:</strong> بعد الحفظ سيتم تغيير حساب البوت تلقائياً دون إعادة تشغيل.
       </div>
-      <div class="page-content">
-        <div class="prot-grid">
-          <div class="prot-card">
-            <span class="pc-ico">⌨️</span>
-            <div class="pc-info">
-              <div class="pc-name">محاكاة الكتابة البشرية</div>
-              <div class="pc-desc">تأخير واقعي قبل كل رد — يمنع الكشف كبوت</div>
-            </div>
-            <label class="toggle-sw"><input type="checkbox" id="p-typing" onchange="toggleProt('humanTyping',this.checked)"><div class="track"></div><div class="thumb"></div></label>
-          </div>
-          <div class="prot-card">
-            <span class="pc-ico">🕵️</span>
-            <div class="pc-info">
-              <div class="pc-name">محرك التخفي</div>
-              <div class="pc-desc">تصفح صفحات، تدوير UA، نوم ليلي (1-8 صباحاً)</div>
-            </div>
-            <label class="toggle-sw"><input type="checkbox" id="p-stealth" onchange="toggleProt('stealth',this.checked)"><div class="track"></div><div class="thumb"></div></label>
-          </div>
-          <div class="prot-card">
-            <span class="pc-ico">🐢</span>
-            <div class="pc-info">
-              <div class="pc-name">تقييد الرسائل الصادرة</div>
-              <div class="pc-desc">Throttle — يمنع إرسال رسائل كثيرة في وقت قصير</div>
-            </div>
-            <label class="toggle-sw"><input type="checkbox" id="p-throttle" onchange="toggleProt('throttle',this.checked)"><div class="track"></div><div class="thumb"></div></label>
-          </div>
-          <div class="prot-card">
-            <span class="pc-ico">📡</span>
-            <div class="pc-info">
-              <div class="pc-name">فحص صحة MQTT</div>
-              <div class="pc-desc">إعادة اتصال تلقائي عند انقطاع الاتصال</div>
-            </div>
-            <label class="toggle-sw"><input type="checkbox" id="p-mqtt" onchange="toggleProt('mqttHealth',this.checked)"><div class="track"></div><div class="thumb"></div></label>
-          </div>
-          <div class="prot-card">
-            <span class="pc-ico">💓</span>
-            <div class="pc-info">
-              <div class="pc-name">Keep-Alive</div>
-              <div class="pc-desc">نبضة كل 8-18 دقيقة للحفاظ على الجلسة</div>
-            </div>
-            <label class="toggle-sw"><input type="checkbox" id="p-keepalive" onchange="toggleProt('keepAlive',this.checked)"><div class="track"></div><div class="thumb"></div></label>
-          </div>
-          <div class="prot-card">
-            <span class="pc-ico">📊</span>
-            <div class="pc-info">
-              <div class="pc-name">تقييد الأوامر</div>
-              <div class="pc-desc">Rate Limit — 8 أوامر لكل 10 ثوانٍ لكل مستخدم</div>
-            </div>
-            <div style="font-size:.7rem;color:var(--green);font-weight:700">دائماً نشط</div>
-          </div>
-        </div>
 
-        <div class="panel" style="margin-top:14px">
-          <div class="panel-title"><span class="pt-icon">📈</span> إحصائيات الحماية</div>
-          <div id="prot-stats" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px">
-            <div style="font-size:.75rem;color:var(--muted)">جارٍ التحميل…</div>
-          </div>
+      <div class="cookie-tabs">
+        <button class="cookie-tab active" onclick="setCkTab('json',this)">📋 JSON</button>
+        <button class="cookie-tab" onclick="setCkTab('string',this)">🔤 نص</button>
+        <button class="cookie-tab" onclick="setCkTab('token',this)">🔑 توكن</button>
+        <button class="cookie-tab" onclick="setCkTab('netscape',this)">🦊 Netscape</button>
+      </div>
+
+      <div class="cookie-pane active" id="ck-pane-json">
+        <div class="cookie-hint">
+          <strong>📋 JSON Array</strong> — مصفوفة من الكوكيز (c3c / Cookie-Editor / EditThisCookie)<br>
+          <code>[{"key":"c_user","value":"123..."},{"key":"xs","value":"abc..."},{"key":"datr","value":"xxx"}]</code><br>
+          أو: <code>[{"name":"c_user","value":"..."}]</code> — يدعم name و key
+        </div>
+        <textarea class="ck-input" id="ck-json-input" placeholder='[{"key":"c_user","value":"..."},{"key":"xs","value":"..."},{"key":"datr","value":"..."}]'></textarea>
+        <div class="ck-actions">
+          <button class="btn btn-primary" onclick="submitCookies('json')"><span class="spin hidden" id="sp-json"></span>💾 حفظ وتطبيق</button>
+          <button class="btn btn-outline" onclick="validateOnly('json')">🔍 تحقق فقط</button>
+          <button class="btn btn-outline" onclick="clearInput('ck-json-input')">🗑️ مسح</button>
+        </div>
+      </div>
+
+      <div class="cookie-pane" id="ck-pane-string">
+        <div class="cookie-hint">
+          <strong>🔤 نص الكوكيز</strong> — انسخ مباشرة من المتصفح (DevTools → Network → Request Headers → Cookie)<br>
+          <code>c_user=123456; xs=abc:def; datr=xxxx; sb=yyyy; fr=zzzz</code>
+        </div>
+        <textarea class="ck-input" id="ck-str-input" placeholder="c_user=123456789; xs=abc:def:ghi; datr=xxxxx; sb=yyyy; fr=zzzz"></textarea>
+        <div class="ck-actions">
+          <button class="btn btn-primary" onclick="submitCookies('string')"><span class="spin hidden" id="sp-str"></span>💾 حفظ وتطبيق</button>
+          <button class="btn btn-outline" onclick="validateOnly('string')">🔍 تحقق فقط</button>
+          <button class="btn btn-outline" onclick="clearInput('ck-str-input')">🗑️ مسح</button>
+        </div>
+      </div>
+
+      <div class="cookie-pane" id="ck-pane-token">
+        <div class="cookie-hint">
+          <strong>🔑 توكن Facebook</strong> — الصق توكن EAAAA...<br>
+          سيتم تحويل التوكن تلقائياً إلى كوكيز وتسجيل الدخول<br>
+          <code>EAAAA6z8X4Ba...</code>
+        </div>
+        <input class="ck-input" id="ck-tok-input" type="text" placeholder="EAAAA6z8X4Ba..."/>
+        <div class="ck-actions">
+          <button class="btn btn-primary" onclick="submitCookies('token')"><span class="spin hidden" id="sp-tok"></span>🔄 تحويل وتطبيق</button>
+          <button class="btn btn-outline" onclick="clearInput('ck-tok-input')">🗑️ مسح</button>
+        </div>
+      </div>
+
+      <div class="cookie-pane" id="ck-pane-netscape">
+        <div class="cookie-hint">
+          <strong>🦊 Netscape Format</strong> — صيغة كوكيز المتصفح القديمة<br>
+          <code># Netscape HTTP Cookie File<br>facebook.com TRUE / FALSE 0 c_user 123456</code>
+        </div>
+        <textarea class="ck-input" id="ck-ns-input" placeholder="# Netscape HTTP Cookie File&#10;facebook.com&#9;TRUE&#9;/&#9;FALSE&#9;0&#9;c_user&#9;123456&#10;facebook.com&#9;TRUE&#9;/&#9;FALSE&#9;0&#9;xs&#9;abc:def"></textarea>
+        <div class="ck-actions">
+          <button class="btn btn-primary" onclick="submitCookies('netscape')"><span class="spin hidden" id="sp-ns"></span>💾 حفظ وتطبيق</button>
+          <button class="btn btn-outline" onclick="clearInput('ck-ns-input')">🗑️ مسح</button>
+        </div>
+      </div>
+
+      <div class="ck-status" id="ck-status"></div>
+    </div>
+
+    <!-- Danger -->
+    <div class="panel" style="border-color:#ef444430">
+      <div class="panel-title"><span class="pt-icon">⚠️</span> منطقة الخطر</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div style="font-size:.76rem;color:var(--muted)">حذف الكوكيز نهائياً — سيقطع البوت ويوقفه</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-warning btn-sm" onclick="triggerRelogin()">🔄 إعادة تسجيل الدخول</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteCookies()">🗑️ حذف الكوكيز</button>
         </div>
       </div>
     </div>
+  </div>
+</div>
 
-    <!-- ══ COMMANDS ══ -->
-    <div id="page-commands" class="page hidden">
-      <div class="page-header">
-        <div><div class="page-title"><span>⚙️</span> الأوامر</div><div class="page-desc">إدارة أوامر البوت</div></div>
-        <button class="btn btn-primary btn-sm" onclick="openAddCmd()">➕ أمر جديد</button>
+<!-- ══ PROTECTION ══ -->
+<div id="page-protection" class="page hidden">
+  <div class="page-header">
+    <div><div class="page-title"><span>🛡️</span> الحماية</div><div class="page-desc">WHITE Engine — حماية الحساب</div></div>
+    <button class="btn btn-outline btn-sm" onclick="loadProtection()">🔄 تحديث</button>
+  </div>
+  <div class="page-content">
+    <div class="prot-grid">
+      <div class="prot-card"><span class="pc-ico">⌨️</span><div class="pc-info"><div class="pc-name">محاكاة الكتابة البشرية</div><div class="pc-desc">تأخير واقعي قبل كل رد — يمنع الكشف كبوت</div></div><label class="toggle-sw"><input type="checkbox" id="p-typing" onchange="toggleProt('humanTyping',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
+      <div class="prot-card"><span class="pc-ico">🕵️</span><div class="pc-info"><div class="pc-name">محرك التخفي</div><div class="pc-desc">تصفح صفحات وتدوير User-Agent ونوم ليلي</div></div><label class="toggle-sw"><input type="checkbox" id="p-stealth" onchange="toggleProt('stealth',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
+      <div class="prot-card"><span class="pc-ico">📡</span><div class="pc-info"><div class="pc-name">MQTT Health Check</div><div class="pc-desc">إعادة اتصال تلقائي عند الانقطاع</div></div><label class="toggle-sw"><input type="checkbox" id="p-mqtt" onchange="toggleProt('mqttHealth',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
+      <div class="prot-card"><span class="pc-ico">💓</span><div class="pc-info"><div class="pc-name">Keep-Alive</div><div class="pc-desc">نبضة كل 8-18 دقيقة</div></div><label class="toggle-sw"><input type="checkbox" id="p-keepalive" onchange="toggleProt('keepAlive',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
+      <div class="prot-card"><span class="pc-ico">🐢</span><div class="pc-info"><div class="pc-name">تقليل سرعة الإرسال</div><div class="pc-desc">Outgoing Throttle — يحمي من الحظر</div></div><label class="toggle-sw"><input type="checkbox" id="p-throttle" onchange="toggleProt('throttle',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
+    </div>
+    <div class="panel" style="margin-top:14px">
+      <div class="panel-title"><span class="pt-icon">📊</span> إحصاء الحماية</div>
+      <div class="cards-grid" id="prot-stats" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr))"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ COMMANDS ══ -->
+<div id="page-commands" class="page hidden">
+  <div class="page-header">
+    <div><div class="page-title"><span>⚙️</span> الأوامر</div><div class="page-desc">إدارة وتعديل الأوامر — دعم الوسائط</div></div>
+    <div style="display:flex;gap:8px">
+      <input type="text" id="cmd-search" placeholder="🔍 بحث…" style="background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:7px 12px;font-size:.78rem;outline:none;width:160px" oninput="filterCmds(this.value)"/>
+      <button class="btn btn-primary btn-sm" onclick="openAddCmd()">➕ أمر جديد</button>
+    </div>
+  </div>
+  <div class="page-content">
+    <div id="cmd-grid" class="cmd-grid"></div>
+  </div>
+</div>
+
+<!-- ══ MEDIA ══ -->
+<div id="page-media" class="page hidden">
+  <div class="page-header">
+    <div><div class="page-title"><span>🖼️</span> مكتبة الوسائط</div><div class="page-desc">صور · GIF · فيديو · صوت — اربطها بالأوامر</div></div>
+    <button class="btn btn-outline btn-sm" onclick="loadMedia()">🔄 تحديث</button>
+  </div>
+  <div class="page-content">
+    <div class="panel">
+      <div class="panel-title"><span class="pt-icon">⬆️</span> رفع ملف</div>
+      <div class="drop-zone" id="drop-zone" onclick="$('media-file-input').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
+        <div class="dz-ico">📁</div>
+        <div class="dz-txt">اضغط أو اسحب الملف هنا</div>
+        <div class="dz-sub">صور · GIF · فيديو (mp4) · صوت (mp3) · حجم أقصى 50 MB</div>
       </div>
-      <div class="page-content">
-        <div class="panel" style="margin-bottom:14px">
-          <input style="background:#080816;border:1px solid var(--border);border-radius:9px;color:var(--text);padding:9px 12px;font-size:.82rem;outline:none;width:100%" placeholder="🔍 بحث في الأوامر…" oninput="filterCmds(this.value)" id="cmd-search"/>
-        </div>
-        <div class="cmd-grid" id="cmd-grid">
-          <div style="color:var(--muted);font-size:.78rem">جارٍ التحميل…</div>
-        </div>
-        <!-- Add command modal -->
-        <div id="add-cmd-modal" class="hidden" style="position:fixed;inset:0;background:#000c;z-index:500;display:flex;align-items:center;justify-content:center;padding:16px">
-          <div class="panel" style="width:100%;max-width:560px;max-height:90vh;overflow-y:auto">
-            <div class="panel-title"><span>➕</span> إضافة أمر جديد</div>
-            <div class="form-row"><label>اسم الأمر</label><input id="new-cmd-name" placeholder="ping" /></div>
-            <div class="form-row"><label>الكود (JavaScript)</label><textarea id="new-cmd-src" style="background:#080816;border:1px solid var(--border);border-radius:9px;color:var(--text);padding:10px 12px;font-size:.75rem;min-height:200px;resize:vertical;width:100%;outline:none;font-family:monospace" placeholder='module.exports = {
-  config: { name: "ping", description: "اختبار البوت" },
-  run: async ({ api, event }) => {
-    await api.sendMessage("🏓 Pong!", event.threadID);
-  }
-};'></textarea></div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <button class="btn btn-primary" onclick="saveNewCmd()">💾 حفظ</button>
-              <button class="btn btn-outline" onclick="closeAddCmd()">إلغاء</button>
-            </div>
-          </div>
-        </div>
+      <input type="file" id="media-file-input" style="display:none" accept="image/*,video/*,audio/*,.gif" onchange="uploadMedia(this.files[0])"/>
+      <div id="upload-status" class="ck-status" style="margin-top:10px"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title"><span class="pt-icon">🗂️</span> الملفات المرفوعة <span id="media-count" style="color:var(--muted);font-size:.7rem;font-weight:400"></span></div>
+      <div class="media-grid" id="media-grid"><div style="color:var(--muted);font-size:.78rem">جارٍ التحميل…</div></div>
+    </div>
+    <div class="panel" style="border-color:#7c6cfc40">
+      <div class="panel-title"><span class="pt-icon">💡</span> كيف تستخدم الوسائط في أمر؟</div>
+      <div style="font-size:.74rem;color:var(--muted2);line-height:1.9">
+        بعد رفع صورة/صوت/فيديو، انسخ رابطها ثم استخدمها في كود الأمر كالتالي:<br>
+        <code style="background:#1a1a40;padding:4px 8px;border-radius:6px;display:inline-block;margin:4px 0;font-size:.72rem;color:var(--accent2)">
+const fs = require('fs-extra');<br>
+const path = require('path');<br>
+// الصورة:<br>
+api.sendMessage({ body: "مرحبا!", attachment: fs.createReadStream(path.join(__dirname,'../../src/dashboard/public/uploads/filename.jpg')) }, threadID);<br>
+// أو أرسل رابطاً مباشراً:<br>
+api.sendMessage({ body: "", url: "/uploads/filename.jpg" }, threadID);
+        </code>
       </div>
     </div>
+  </div>
+</div>
 
-    <!-- ══ SEND ══ -->
-    <div id="page-send" class="page hidden">
-      <div class="page-header">
-        <div><div class="page-title"><span>💬</span> إرسال رسالة</div><div class="page-desc">إرسال مباشر من لوحة التحكم</div></div>
+<!-- ══ SEND ══ -->
+<div id="page-send" class="page hidden">
+  <div class="page-header">
+    <div><div class="page-title"><span>💬</span> إرسال رسالة</div><div class="page-desc">أرسل رسالة مباشرة لأي محادثة</div></div>
+  </div>
+  <div class="page-content">
+    <div class="panel">
+      <div class="send-form">
+        <div class="form-row"><label>معرّف المحادثة (threadID)</label><input id="send-tid" placeholder="123456789012345"/></div>
+        <div class="form-row"><label>الرسالة</label><textarea id="send-msg" placeholder="اكتب رسالتك…" rows="4"></textarea></div>
+        <button class="btn btn-primary" id="send-btn" onclick="sendMsg()">📤 إرسال</button>
       </div>
-      <div class="page-content">
-        <div class="panel">
-          <div class="panel-title"><span class="pt-icon">📤</span> إرسال رسالة</div>
-          <div class="send-form">
-            <div class="form-row"><label>معرّف المحادثة (Thread ID)</label><input id="send-tid" placeholder="100xxxxxxxxxx أو ID المجموعة"/></div>
-            <div class="form-row"><label>الرسالة</label><textarea id="send-msg" placeholder="اكتب رسالتك هنا…"></textarea></div>
-            <button class="btn btn-primary" onclick="sendMsg()" id="send-btn">📤 إرسال</button>
-          </div>
-          <div class="ck-status" id="send-status" style="margin-top:12px"></div>
-        </div>
+      <div class="ck-status" id="send-status" style="margin-top:10px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ LOG ══ -->
+<div id="page-log" class="page hidden">
+  <div class="page-header">
+    <div><div class="page-title"><span>📝</span> سجل الرسائل</div><div class="page-desc">مراقبة الرسائل والأوامر لحظياً</div></div>
+    <button class="btn btn-outline btn-sm" onclick="clearLog()">🗑️ مسح</button>
+  </div>
+  <div class="page-content">
+    <div class="panel" style="padding:12px">
+      <div id="msg-log"><div style="color:var(--muted);font-size:.78rem;text-align:center;padding:20px">انتظار الرسائل…</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ADMINS ══ -->
+<div id="page-admins" class="page hidden">
+  <div class="page-header">
+    <div><div class="page-title"><span>👑</span> الأدمنز</div><div class="page-desc">إدارة صلاحيات البوت</div></div>
+  </div>
+  <div class="page-content">
+    <div class="panel">
+      <div class="panel-title"><span class="pt-icon">👥</span> قائمة الأدمنز</div>
+      <div class="admin-list" id="admin-list"></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="new-admin-uid" placeholder="Facebook UID" style="background:#080816;border:1px solid var(--border);border-radius:9px;color:var(--text);padding:9px 12px;font-size:.82rem;outline:none;flex:1"/>
+        <button class="btn btn-success btn-sm" onclick="addAdmin()">➕ إضافة</button>
       </div>
     </div>
-
-    <!-- ══ LOG ══ -->
-    <div id="page-log" class="page hidden">
-      <div class="page-header">
-        <div><div class="page-title"><span>📝</span> سجل الرسائل</div><div class="page-desc">الرسائل الواردة للبوت</div></div>
-        <button class="btn btn-outline btn-sm" onclick="clearLog()">🗑️ مسح السجل</button>
+    <div class="panel">
+      <div class="panel-title"><span class="pt-icon">🔑</span> تغيير كلمة المرور</div>
+      <div class="form-grid">
+        <div class="form-row"><label>الحالية</label><input type="password" id="pw-cur" placeholder="كلمة المرور الحالية"/></div>
+        <div class="form-row"><label>الجديدة</label><input type="password" id="pw-new" placeholder="كلمة المرور الجديدة"/></div>
       </div>
-      <div class="page-content">
-        <div class="panel">
-          <div id="msg-log"><div style="color:var(--muted);font-size:.78rem;text-align:center;padding:20px">انتظار الرسائل…</div></div>
-        </div>
-      </div>
+      <button class="btn btn-primary btn-sm" onclick="changePw()">💾 حفظ</button>
+      <div class="ck-status" id="pw-status" style="margin-top:10px"></div>
     </div>
+  </div>
+</div>
 
-    <!-- ══ ADMINS ══ -->
-    <div id="page-admins" class="page hidden">
-      <div class="page-header">
-        <div><div class="page-title"><span>👑</span> الأدمنز</div><div class="page-desc">إدارة صلاحيات البوت</div></div>
+<!-- ══ CONFIG ══ -->
+<div id="page-config" class="page hidden">
+  <div class="page-header">
+    <div><div class="page-title"><span>🔧</span> الإعدادات</div><div class="page-desc">إعدادات البوت الأساسية</div></div>
+  </div>
+  <div class="page-content">
+    <div class="panel">
+      <div class="form-grid">
+        <div class="form-row"><label>اسم البوت</label><input id="cfg-name" placeholder="jarfis"/></div>
+        <div class="form-row"><label>البادئة (Prefix)</label><input id="cfg-prefix" placeholder="/"/></div>
+        <div class="form-row"><label>UID المالك</label><input id="cfg-owner" placeholder="100000000000000"/></div>
+        <div class="form-row"><label>المنطقة الزمنية</label><input id="cfg-tz" placeholder="Africa/Algiers"/></div>
       </div>
-      <div class="page-content">
-        <div class="panel">
-          <div class="panel-title"><span class="pt-icon">👑</span> قائمة الأدمنز</div>
-          <div class="admin-list" id="admin-list"><div style="color:var(--muted);font-size:.78rem">جارٍ التحميل…</div></div>
-          <hr class="divider"/>
-          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <input id="new-admin-uid" style="flex:1;min-width:180px;background:#080816;border:1px solid var(--border);border-radius:9px;color:var(--text);padding:9px 12px;font-size:.82rem;outline:none" placeholder="أدخل UID المستخدم"/>
-            <button class="btn btn-primary btn-sm" onclick="addAdmin()">➕ إضافة أدمن</button>
-          </div>
-        </div>
-        <div class="panel">
-          <div class="panel-title"><span class="pt-icon">🔑</span> تغيير كلمة المرور</div>
-          <div class="form-row"><label>كلمة المرور الحالية</label><input type="password" id="pw-cur" placeholder="••••••••"/></div>
-          <div class="form-row"><label>كلمة المرور الجديدة</label><input type="password" id="pw-new" placeholder="كلمة مرور جديدة"/></div>
-          <button class="btn btn-primary btn-sm" onclick="changePw()">💾 حفظ</button>
-          <div class="ck-status" id="pw-status" style="margin-top:10px"></div>
-        </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-primary btn-sm" onclick="saveConfig()">💾 حفظ</button>
+        <button class="btn btn-outline btn-sm" onclick="loadConfig()">🔄 استرجاع</button>
+        <button class="btn btn-danger btn-sm" onclick="restartBot()">🔁 إعادة تشغيل</button>
       </div>
+      <div class="ck-status" id="cfg-status" style="margin-top:10px"></div>
     </div>
+  </div>
+</div>
 
-    <!-- ══ CONFIG ══ -->
-    <div id="page-config" class="page hidden">
-      <div class="page-header">
-        <div><div class="page-title"><span>🔧</span> الإعدادات</div><div class="page-desc">إعدادات البوت الأساسية</div></div>
-      </div>
-      <div class="page-content">
-        <div class="panel">
-          <div class="panel-title"><span class="pt-icon">🤖</span> إعدادات البوت</div>
-          <div class="form-grid">
-            <div class="form-row"><label>اسم البوت</label><input id="cfg-name" placeholder="jarfis"/></div>
-            <div class="form-row"><label>البادئة Prefix</label><input id="cfg-prefix" placeholder="/"/></div>
-            <div class="form-row"><label>Owner ID</label><input id="cfg-owner" placeholder="100xxxxxxxxxx"/></div>
-            <div class="form-row"><label>التوقيت الزمني</label><input id="cfg-tz" placeholder="Africa/Algiers"/></div>
-          </div>
-          <button class="btn btn-primary btn-sm" onclick="saveConfig()">💾 حفظ الإعدادات</button>
-          <div class="ck-status" id="cfg-status" style="margin-top:10px"></div>
-        </div>
-        <div class="panel">
-          <div class="panel-title"><span class="pt-icon">⚠️</span> إعادة التشغيل</div>
-          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
-            <div style="font-size:.76rem;color:var(--muted)">إعادة تشغيل البوت بالكامل وتطبيق التغييرات</div>
-            <button class="btn btn-danger btn-sm" onclick="restartBot()">🔄 إعادة التشغيل</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-  </div><!-- /main -->
+</div><!-- /main -->
 </div><!-- /app -->
+
+<!-- ══ MODAL: CMD VIEW/EDIT ══ -->
+<div class="modal" id="modal-cmd">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <h3 id="modal-cmd-title">الأمر</h3>
+      <button class="modal-close" onclick="closeModal('modal-cmd')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid" style="margin-bottom:12px">
+        <div class="form-row"><label>اسم الأمر</label><input id="edit-cmd-name" readonly style="opacity:.6"/></div>
+        <div class="form-row"><label>الوصف</label><input id="edit-cmd-desc" placeholder="وصف الأمر"/></div>
+        <div class="form-row"><label>الاستخدام</label><input id="edit-cmd-usage" placeholder="مثال: help [أمر]"/></div>
+        <div class="form-row"><label>الصنف</label>
+          <select id="edit-cmd-cat">
+            <option value="general">عام</option>
+            <option value="economy">الاقتصاد</option>
+            <option value="admin">الإدارة</option>
+            <option value="fun">الترفيه</option>
+            <option value="info">معلومات</option>
+            <option value="media">وسائط</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center;flex-wrap:wrap">
+        <label style="font-size:.72rem;color:var(--muted2);font-weight:600">كود الأمر</label>
+        <button class="btn btn-outline btn-sm" onclick="insertMediaRef()">🖼️ إدراج وسائط</button>
+        <button class="btn btn-outline btn-sm" onclick="formatCode()">✨ تنسيق</button>
+      </div>
+      <textarea class="code-editor" id="edit-cmd-src" spellcheck="false"></textarea>
+      <div id="edit-cmd-media" style="margin-top:10px;display:none">
+        <div style="font-size:.73rem;color:var(--muted2);margin-bottom:6px">اختر ملف من المكتبة:</div>
+        <div class="media-grid" id="edit-media-picker" style="max-height:180px;overflow-y:auto"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger btn-sm" onclick="deleteCmd()">🗑️ حذف</button>
+      <button class="btn btn-outline btn-sm" onclick="closeModal('modal-cmd')">إلغاء</button>
+      <button class="btn btn-primary btn-sm" onclick="saveCmd()">💾 حفظ التعديلات</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: ADD CMD ══ -->
+<div class="modal" id="modal-add-cmd">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <h3>➕ أمر جديد</h3>
+      <button class="modal-close" onclick="closeModal('modal-add-cmd')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid" style="margin-bottom:12px">
+        <div class="form-row"><label>اسم الأمر *</label><input id="new-cmd-name" placeholder="mycommand"/></div>
+        <div class="form-row"><label>الصنف</label>
+          <select id="new-cmd-cat">
+            <option value="general">عام</option><option value="economy">الاقتصاد</option>
+            <option value="admin">الإدارة</option><option value="fun">الترفيه</option>
+            <option value="info">معلومات</option><option value="media">وسائط</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+        <label style="font-size:.72rem;color:var(--muted2);font-weight:600">كود الأمر *</label>
+        <button class="btn btn-outline btn-sm" onclick="fillTemplate()">📄 قالب جاهز</button>
+        <button class="btn btn-outline btn-sm" onclick="insertMediaRefNew()">🖼️ إدراج وسائط</button>
+      </div>
+      <textarea class="code-editor" id="new-cmd-src" spellcheck="false" placeholder="module.exports = { config: { name: 'mycommand', ... }, async run({ api, event, args, threadID }) { ... } };"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('modal-add-cmd')">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveNewCmd()">💾 إضافة الأمر</button>
+    </div>
+  </div>
+</div>
 
 <div id="toast-wrap"></div>
 
 <script>
-/* ══ STATE ══ */
-let _currentPage = 'dashboard';
+/* ══ GLOBALS ══ */
+let _page = 'dashboard';
 let _allCmds = [];
 let _socket = null;
+let _editingCmd = null;
+let _allMedia = [];
 
 /* ══ UTILS ══ */
 const $ = id => document.getElementById(id);
@@ -610,396 +686,437 @@ const toast = (msg, type='info') => {
   el.className = `toast ${type}`;
   el.textContent = msg;
   $('toast-wrap').appendChild(el);
-  setTimeout(() => { el.style.opacity='0'; el.style.transition='opacity .4s'; setTimeout(()=>el.remove(),400); }, 3000);
+  setTimeout(() => { el.style.opacity='0'; el.style.transition='opacity .4s'; setTimeout(()=>el.remove(),400); }, 3500);
 };
 const fmtUptime = s => {
-  s = Math.floor(s);
-  const d = Math.floor(s/86400), h = Math.floor((s%86400)/3600), m = Math.floor((s%3600)/60), ss = s%60;
-  if (d>0) return `${d}ي ${h}س`;
-  if (h>0) return `${h}س ${m}د`;
-  if (m>0) return `${m}د ${ss}ث`;
-  return `${ss}ث`;
+  s=Math.floor(s);const d=Math.floor(s/86400),h=Math.floor((s%86400)/3600),m=Math.floor((s%3600)/60),ss=s%60;
+  if(d>0)return `${d}ي ${h}س`;if(h>0)return `${h}س ${m}د`;if(m>0)return `${m}د ${ss}ث`;return `${ss}ث`;
 };
-const api = async (url, opts={}) => {
-  const r = await fetch(url, { headers: {'Content-Type':'application/json'}, ...opts });
+const fmtSize = b => b>1048576?`${(b/1048576).toFixed(1)}MB`:b>1024?`${(b/1024).toFixed(0)}KB`:`${b}B`;
+const apiFetch = async (url, opts={}) => {
+  const r = await fetch(url,{headers:{'Content-Type':'application/json'},...opts});
   const j = await r.json().catch(()=>({error:'Invalid JSON'}));
-  return { ok: r.ok, status: r.status, data: j };
+  return {ok:r.ok,status:r.status,data:j};
 };
-function showStatus(id, msg, type) {
-  const el = $(id);
-  if (!el) return;
-  el.className = `ck-status show ${type}`;
-  el.innerHTML = `<span>${type==='ok'?'✅':type==='err'?'❌':type==='warn'?'⚠️':'ℹ️'}</span><span>${msg}</span>`;
-}
-function hideStatus(id) { const el=$(id); if(el){el.classList.remove('show');el.className='ck-status';} }
+function showStatus(id,msg,type){const el=$(id);if(!el)return;el.className=`ck-status show ${type}`;el.innerHTML=`<span>${type==='ok'?'✅':type==='err'?'❌':type==='warn'?'⚠️':'ℹ️'}</span><span>${msg}</span>`;}
+function hideStatus(id){const el=$(id);if(el)el.className='ck-status';}
 
 /* ══ AUTH ══ */
 const doLogin = async () => {
-  const pw = $('login-pw').value.trim();
-  if (!pw) return $('login-err').textContent = 'أدخل كلمة المرور';
-  $('login-err').textContent = '';
-  const btn = document.querySelector('.lc-btn');
-  btn.textContent = '…'; btn.disabled = true;
-  const r = await api('/api/login', { method:'POST', body:JSON.stringify({password:pw}) });
-  btn.textContent = 'دخول'; btn.disabled = false;
-  if (r.ok) { $('login-screen').classList.add('hidden'); $('app').classList.remove('hidden'); onReady(); }
-  else $('login-err').textContent = r.data.error || 'خطأ';
+  const pw=$('login-pw').value.trim();
+  if(!pw)return $('login-err').textContent='أدخل كلمة المرور';
+  $('login-err').textContent='';
+  const btn=document.querySelector('.lc-btn');btn.textContent='…';btn.disabled=true;
+  const r=await apiFetch('/api/login',{method:'POST',body:JSON.stringify({password:pw})});
+  btn.textContent='دخول';btn.disabled=false;
+  if(r.ok){$('login-screen').classList.add('hidden');$('app').classList.remove('hidden');onReady();}
+  else $('login-err').textContent=r.data.error||'خطأ';
 };
-const doLogout = async () => {
-  await api('/api/logout', {method:'POST'});
-  location.reload();
-};
-$('login-pw').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+const doLogout=async()=>{await apiFetch('/api/logout',{method:'POST'});location.reload();};
+$('login-pw').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 
 /* ══ SOCKET ══ */
-function initSocket() {
-  _socket = io({ transports: ['polling','websocket'] });
-  _socket.on('bot-status', d => updateStatus(d));
-  _socket.on('message', d => addLog(d));
-  _socket.on('cookies-updated', d => {
+function initSocket(){
+  _socket=io({transports:['polling','websocket']});
+  _socket.on('bot-status',d=>updateStatus(d));
+  _socket.on('message',d=>addLog(d));
+  _socket.on('command',d=>addCmdLog(d));
+  _socket.on('cookies-updated',d=>{
     loadCookieStatus();
-    toast(`كوكيز محدّثة — ${d.count} كوكي`, 'ok');
+    toast(`✅ الكوكيز محدّثة — ${d.count||0} كوكي · ${d.message||''}`, 'ok');
   });
 }
-function updateStatus(d) {
-  const dot = $('sb-dot'), msg = $('sb-msg');
-  dot.className = '';
-  if (d.status === 'online') { dot.classList.add('online'); }
-  else if (d.status === 'error' || d.status === 'degraded') { dot.classList.add('error'); }
-  else { dot.classList.add('offline'); }
-  msg.textContent = d.message || d.status;
+function updateStatus(d){
+  const dot=$('sb-dot'),msg=$('sb-msg');
+  dot.className='';
+  if(d.status==='online')dot.classList.add('online');
+  else if(d.status==='connecting')dot.classList.add('connecting');
+  else if(d.status==='error'||d.status==='degraded')dot.classList.add('error');
+  else dot.classList.add('offline');
+  msg.textContent=d.message||d.status;
 }
 
 /* ══ NAV ══ */
-function goto(page) {
-  document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  const el = $('page-'+page);
-  if (el) { el.classList.remove('hidden'); _currentPage = page; }
-  document.querySelectorAll('.nav-item').forEach(n => {
-    if (n.textContent.trim().replace(/\s+/g,' ').includes(
-      {dashboard:'لوحة',cookies:'الكوكيز',protection:'الحماية',commands:'الأوامر',send:'إرسال',log:'سجل',admins:'الأدمنز',config:'الإعدادات'}[page] || '§'
-    )) n.classList.add('active');
-  });
+function goto(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const el=$('page-'+page);if(el)el.classList.remove('hidden');
+  _page=page;
+  document.querySelectorAll('.nav-item').forEach(n=>{if(n.dataset.page===page)n.classList.add('active');});
   closeSidebar();
-  if (page==='dashboard') loadStats();
-  if (page==='cookies') loadCookieStatus();
-  if (page==='protection') loadProtection();
-  if (page==='commands') loadCommands();
-  if (page==='admins') loadAdmins();
-  if (page==='config') loadConfig();
+  if(page==='dashboard')loadStats();
+  if(page==='cookies')loadCookieStatus();
+  if(page==='protection')loadProtection();
+  if(page==='commands')loadCommands();
+  if(page==='media')loadMedia();
+  if(page==='admins')loadAdmins();
+  if(page==='config')loadConfig();
 }
+function toggleSidebar(){$('sidebar').classList.toggle('open');$('overlay').classList.toggle('show');}
+function closeSidebar(){$('sidebar').classList.remove('open');$('overlay').classList.remove('show');}
 
-/* ══ SIDEBAR MOBILE ══ */
-function toggleSidebar() { $('sidebar').classList.toggle('open'); $('overlay').classList.toggle('show'); }
-function closeSidebar() { $('sidebar').classList.remove('open'); $('overlay').classList.remove('show'); }
+/* ══ MODAL ══ */
+function openModal(id){$(id).classList.add('open');$(id).style.display='flex';}
+function closeModal(id){$(id).classList.remove('open');$(id).style.display='none';}
 
 /* ══ STATS ══ */
-async function loadStats() {
-  const r = await api('/api/stats');
-  if (!r.ok) return;
-  const d = r.data;
-  $('st-users').textContent = d.totalUsers ?? '—';
-  $('st-threads').textContent = d.totalThreads ?? '—';
-  $('st-cmds').textContent = d.totalCommands ?? '—';
-  $('st-uptime').textContent = fmtUptime(d.uptime || 0);
-  $('inf-name').textContent = d.botName || 'jarfis';
-  $('inf-prefix').textContent = d.prefix || '/';
-  $('inf-cmdcount').textContent = d.commands || '—';
-  $('inf-admins').textContent = d.adminCount ?? '—';
-  $('inf-ram').textContent = (d.memMB || '—') + ' MB';
-  $('inf-node').textContent = d.nodeVersion || '—';
-  $('sb-ram').textContent = d.memMB || '—';
-  $('sb-node').textContent = d.nodeVersion || '—';
-  if (d.uid) $('sb-uid').textContent = d.uid;
-  // Quick protection toggles
-  if (d.online) updateStatus({status:'online', message:`متصل ✔ (${d.uid || '?'})`});
+async function loadStats(){
+  const r=await apiFetch('/api/stats');if(!r.ok)return;
+  const d=r.data;
+  $('st-users').textContent=d.totalUsers??'—';
+  $('st-threads').textContent=d.totalThreads??'—';
+  $('st-cmds').textContent=d.totalCommands??'—';
+  $('st-uptime').textContent=fmtUptime(d.uptime||0);
+  $('inf-name').textContent=d.botName||'jarfis';
+  $('inf-prefix').textContent=d.prefix||'/';
+  $('inf-cmdcount').textContent=d.commands||'—';
+  $('inf-admins').textContent=d.adminCount??'—';
+  $('inf-ram').textContent=(d.memMB||'—')+' MB';
+  $('inf-node').textContent=d.nodeVersion||'—';
+  $('sb-ram').textContent=d.memMB||'—';$('sb-node').textContent=d.nodeVersion||'—';
+  if(d.uid)$('sb-uid').textContent=d.uid;
+  if(d.online)updateStatus({status:'online',message:`متصل ✔ (${d.uid||'?'})`});
   loadProtection();
 }
 
 /* ══ COOKIE STATUS ══ */
-async function loadCookieStatus() {
-  const r = await api('/api/cookies');
-  const d = r.data;
-  const el = $('ck-current');
-  if (!d.exists || !d.count) {
-    el.innerHTML = `<div style="font-size:.78rem;color:var(--red)">❌ لا توجد كوكيز محفوظة</div>`;
+async function loadCookieStatus(){
+  const r=await apiFetch('/api/cookies');const d=r.data;const el=$('ck-current');
+  if(!d.exists||!d.count){
+    el.innerHTML=`<div style="color:var(--red);font-size:.78rem">❌ لا توجد كوكيز — ارفع الكوكيز أدناه</div>`;
   } else {
-    el.innerHTML = `
-      <div style="display:flex;flex-wrap:wrap;gap:10px">
-        <div class="stat-card" style="padding:10px 14px"><div class="ico" style="background:#22c55e20;color:var(--green);width:32px;height:32px;font-size:.9rem">✅</div><div class="data"><div class="val" style="font-size:1rem">${d.count}</div><div class="lbl">كوكي محفوظ</div></div></div>
-        <div class="stat-card" style="padding:10px 14px"><div class="ico" style="background:${d.uid?'#7c6cfc20':'#ef444420'};color:${d.uid?'var(--accent)':'var(--red)'};width:32px;height:32px;font-size:.9rem">${d.uid?'👤':'❓'}</div><div class="data"><div class="val" style="font-size:.85rem">${d.uid || 'غير معروف'}</div><div class="lbl">c_user</div></div></div>
-        <div class="stat-card" style="padding:10px 14px"><div class="ico" style="background:${d.hasMsess?'#22c55e20':'#eab30820'};color:${d.hasMsess?'var(--green)':'var(--yellow)'};width:32px;height:32px;font-size:.9rem">${d.hasMsess?'📡':'⚠️'}</div><div class="data"><div class="val" style="font-size:.85rem">${d.hasMsess?'متوفر':'غير متوفر'}</div><div class="lbl">m_sess</div></div></div>
-      </div>
-      ${!d.hasMsess?`<div class="ck-status show warn" style="font-size:.7rem;margin-top:8px"><span>⚠️</span><span>m_sess غير موجود — البوت سيستخدم HTTP polling بدل MQTT. للحصول على MQTT الفوري، استخرج كوكيز من messenger.com أيضاً</span></div>`:''}
-    `;
+    const fmt = d.isToken ? '🔑 توكن' : d.format==='cookies'?'🍪 JSON':'📄 ملف';
+    el.innerHTML=`
+      <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+        <div class="tag tag-green">✅ ${d.count} كوكي</div>
+        ${d.uid?`<div class="tag tag-blue">👤 UID: ${d.uid}</div>`:''}
+        <div class="tag" style="background:#7c6cfc20;color:var(--accent)">${fmt}</div>
+        <button class="btn btn-outline btn-sm" onclick="triggerRelogin()">🔄 إعادة تسجيل الدخول</button>
+      </div>`;
   }
 }
 
 /* ══ COOKIE TABS ══ */
-function setCkTab(tab, btn) {
+function setCkTab(tab,btn){
   document.querySelectorAll('.cookie-tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.cookie-pane').forEach(p=>p.classList.remove('active'));
   btn.classList.add('active');
   $('ck-pane-'+tab).classList.add('active');
   hideStatus('ck-status');
 }
-
-function clearInput(id) { $(id).value = ''; hideStatus('ck-status'); }
-
-function getInput(type) {
-  if (type==='json') return $('ck-json-input').value.trim();
-  if (type==='string') return $('ck-str-input').value.trim();
-  if (type==='token') return $('ck-tok-input').value.trim();
+function clearInput(id){$(id).value='';hideStatus('ck-status');}
+function getInput(type){
+  if(type==='json')return $('ck-json-input').value.trim();
+  if(type==='string')return $('ck-str-input').value.trim();
+  if(type==='token')return $('ck-tok-input').value.trim();
+  if(type==='netscape')return $('ck-ns-input').value.trim();
 }
-
-async function submitCookies(type) {
-  const raw = getInput(type);
-  if (!raw) return showStatus('ck-status', 'أدخل الكوكيز أولاً', 'err');
-
-  const spinId = `ck-${type==='json'?'json':type==='string'?'str':'tok'}-spin`;
-  const spinEl = $(spinId);
-  if (spinEl) spinEl.style.display = 'inline-block';
-  showStatus('ck-status', 'جارٍ التحقق والحفظ…', 'info');
-
-  const r = await api('/api/cookies', { method:'POST', body: JSON.stringify({ cookies: raw }) });
-  if (spinEl) spinEl.style.display = 'none';
-
-  if (r.ok) {
-    const d = r.data;
-    let msg = `✅ تم الحفظ — ${d.count} كوكي`;
-    if (d.uid) msg += ` · UID: ${d.uid}`;
-    if (d.hasMsess) msg += ' · m_sess ✔';
-    else msg += ' · m_sess ✘ (سيستخدم HTTP polling)';
-    if (d.valid === false) msg += '\n⚠️ تحذير: mbasic لم يتعرف على الكوكيز — قد تكون منتهية';
-    showStatus('ck-status', msg, d.valid===false ? 'warn' : 'ok');
-    loadCookieStatus();
-    toast('تم حفظ الكوكيز بنجاح', 'ok');
-  } else {
-    showStatus('ck-status', r.data.error || 'فشل الحفظ', 'err');
-  }
+async function submitCookies(type){
+  const raw=getInput(type);if(!raw)return showStatus('ck-status','أدخل الكوكيز أولاً','err');
+  const spId=`sp-${type==='json'?'json':type==='string'?'str':type==='token'?'tok':'ns'}`;
+  const sp=$(spId);if(sp)sp.classList.remove('hidden');
+  showStatus('ck-status','جارٍ التحقق والحفظ وتغيير الحساب…','info');
+  const r=await apiFetch('/api/cookies',{method:'POST',body:JSON.stringify({cookies:raw})});
+  if(sp)sp.classList.add('hidden');
+  if(r.ok){
+    const d=r.data;
+    let msg=`✅ تم الحفظ — ${d.count||0} كوكي`;
+    if(d.uid)msg+=` · UID: ${d.uid}`;
+    msg+=' · 🔄 جارٍ تغيير الحساب تلقائياً…';
+    if(d.valid===false)msg+='\n⚠️ تحذير: mbasic لم يتعرف على الكوكيز';
+    showStatus('ck-status',msg,d.valid===false?'warn':'ok');
+    loadCookieStatus();toast('تم حفظ الكوكيز وتغيير الحساب','ok');
+  } else {showStatus('ck-status',r.data.error||'فشل الحفظ','err');}
 }
-
-async function validateOnly(type) {
-  const raw = getInput(type);
-  if (!raw) return showStatus('ck-status', 'أدخل الكوكيز أولاً', 'err');
-  showStatus('ck-status', 'جارٍ التحقق من صحة الكوكيز…', 'info');
-  const r = await api('/api/cookies/validate', { method:'POST', body: JSON.stringify({ cookies: raw }) });
-  if (r.ok) {
-    const d = r.data;
-    showStatus('ck-status', d.message || (d.valid?'صالحة':'غير صالحة'), d.valid?'ok':d.valid===null?'info':'err');
-  } else {
-    showStatus('ck-status', r.data.message || r.data.error || 'خطأ', 'err');
-  }
+async function validateOnly(type){
+  const raw=getInput(type);if(!raw)return showStatus('ck-status','أدخل الكوكيز أولاً','err');
+  showStatus('ck-status','جارٍ التحقق من صحة الكوكيز…','info');
+  const r=await apiFetch('/api/cookies/validate',{method:'POST',body:JSON.stringify({cookies:raw})});
+  if(r.ok){const d=r.data;showStatus('ck-status',d.message||(d.valid?'صالحة':'غير صالحة'),d.valid?'ok':d.valid===null?'info':'warn');}
+  else showStatus('ck-status',r.data.message||r.data.error||'خطأ','err');
 }
-
-async function deleteCookies() {
-  if (!confirm('هل أنت متأكد من حذف الكوكيز؟ سيُوقف البوت.')) return;
-  const r = await api('/api/cookies', { method:'DELETE' });
-  if (r.ok) { toast('تم حذف الكوكيز', 'ok'); loadCookieStatus(); }
-  else toast(r.data.error || 'خطأ', 'err');
+async function deleteCookies(){
+  if(!confirm('هل أنت متأكد من حذف الكوكيز؟ سيُوقف البوت.'))return;
+  const r=await apiFetch('/api/cookies',{method:'DELETE'});
+  if(r.ok){toast('تم حذف الكوكيز','ok');loadCookieStatus();}else toast(r.data.error||'خطأ','err');
+}
+async function triggerRelogin(){
+  showStatus('ck-status','جارٍ إعادة تسجيل الدخول…','info');
+  const r=await apiFetch('/api/relogin',{method:'POST'});
+  if(r.ok)toast('جارٍ إعادة تسجيل الدخول…','info');
+  else toast(r.data.error||'خطأ','err');
 }
 
 /* ══ PROTECTION ══ */
-async function loadProtection() {
-  const r = await api('/api/protection');
-  if (!r.ok) return;
-  const d = r.data;
-  // Main page toggles
-  const map = {
-    'p-typing': d.humanTyping?.enabled,
-    'p-stealth': d.stealth?.enabled,
-    'p-throttle': d.throttle?.enabled,
-    'p-mqtt': d.mqttHealth?.enabled,
-    'p-keepalive': d.keepAlive?.enabled,
-    // Quick panel
-    'qt-typing': d.humanTyping?.enabled,
-    'qt-stealth': d.stealth?.enabled,
-    'qt-mqtt': d.mqttHealth?.enabled,
-    'qt-keepalive': d.keepAlive?.enabled,
-  };
-  for (const [id, val] of Object.entries(map)) { const el=$(id); if(el) el.checked = !!val; }
-
-  // Stats
-  const ps = $('prot-stats');
-  if (ps && d.throttle) {
-    ps.innerHTML = `
-      <div class="stat-card" style="padding:10px 12px"><div class="data"><div class="val" style="font-size:1rem">${d.throttle.trackedThreads??0}</div><div class="lbl">محادثة مُراقبة</div></div></div>
-      <div class="stat-card" style="padding:10px 12px"><div class="data"><div class="val" style="font-size:1rem">${d.throttle.globalQueueSize??0}</div><div class="lbl">رسائل الآن</div></div></div>
-      <div class="stat-card" style="padding:10px 12px"><div class="data"><div class="val" style="font-size:1rem;color:${d.throttle.burstCoolingActive?'var(--red)':'var(--green)'}">${d.throttle.burstCoolingActive?'نشط':'هادئ'}</div><div class="lbl">Burst Cooling</div></div></div>
-      <div class="stat-card" style="padding:10px 12px"><div class="data"><div class="val" style="font-size:1rem;color:${d.stealth?.isSleepHour?'var(--blue)':'var(--green)'}">${d.stealth?.isSleepHour?'نوم 🌙':'نشط 🟢'}</div><div class="lbl">وضع التخفي</div></div></div>
-    `;
-  }
+async function loadProtection(){
+  const r=await apiFetch('/api/protection');if(!r.ok)return;const d=r.data;
+  const map={'p-typing':d.humanTyping?.enabled,'p-stealth':d.stealth?.enabled,'p-throttle':d.throttle?.enabled,'p-mqtt':d.mqttHealth?.enabled,'p-keepalive':d.keepAlive?.enabled,'qt-typing':d.humanTyping?.enabled,'qt-stealth':d.stealth?.enabled,'qt-keepalive':d.keepAlive?.enabled};
+  for(const[id,val]of Object.entries(map)){const el=$(id);if(el)el.checked=!!val;}
+  const ps=$('prot-stats');
+  if(ps&&d.throttle){ps.innerHTML=`
+    <div class="stat-card" style="padding:10px 12px"><div class="data"><div class="val" style="font-size:1rem">${d.throttle.trackedThreads??0}</div><div class="lbl">محادثة مُراقبة</div></div></div>
+    <div class="stat-card" style="padding:10px 12px"><div class="data"><div class="val" style="font-size:1rem">${d.throttle.globalQueueSize??0}</div><div class="lbl">رسائل في الصف</div></div></div>
+    <div class="stat-card" style="padding:10px 12px"><div class="data"><div class="val" style="font-size:1rem;color:${d.throttle.burstCoolingActive?'var(--red)':'var(--green)'}">${d.throttle.burstCoolingActive?'نشط':'هادئ'}</div><div class="lbl">Burst Cooling</div></div></div>
+    <div class="stat-card" style="padding:10px 12px"><div class="data"><div class="val" style="font-size:1rem;color:${d.stealth?.isSleepHour?'var(--blue)':'var(--green)'}">${d.stealth?.isSleepHour?'نوم 🌙':'نشط 🟢'}</div><div class="lbl">الوضع</div></div></div>`;}
 }
-
-async function toggleProt(system, enable) {
-  const r = await api('/api/protection/toggle', { method:'POST', body: JSON.stringify({system, enable}) });
-  if (r.ok) toast(`${enable?'تفعيل':'إيقاف'} ${system}`, 'ok');
-  else toast(r.data.error || 'خطأ', 'err');
+async function toggleProt(system,enable){
+  const r=await apiFetch('/api/protection/toggle',{method:'POST',body:JSON.stringify({system,enable})});
+  if(r.ok)toast(`${enable?'✅ تفعيل':'⛔ إيقاف'} ${system}`,'ok');else toast(r.data.error||'خطأ','err');
 }
 
 /* ══ COMMANDS ══ */
-async function loadCommands() {
-  const r = await api('/api/commands');
-  if (!r.ok) return;
-  _allCmds = r.data;
-  renderCmds(_allCmds);
+async function loadCommands(){
+  const r=await apiFetch('/api/commands');if(!r.ok)return;
+  _allCmds=r.data;renderCmds(_allCmds);
 }
-function renderCmds(list) {
-  const icons = ['⚡','🎯','🔮','🎲','💡','🔧','🎭','🌟','💬','🎪'];
-  const g = $('cmd-grid');
-  if (!list.length) { g.innerHTML='<div style="color:var(--muted);font-size:.78rem">لا توجد أوامر</div>'; return; }
-  g.innerHTML = list.map((c,i) => `
-    <div class="cmd-card" onclick="viewCmd('${c.name}')">
+function renderCmds(list){
+  const icons=['⚡','🎯','🔮','🎲','💡','🔧','🎭','🌟','💬','🎪','🏆','💰','🎵','📸','🗡️'];
+  const g=$('cmd-grid');
+  if(!list.length){g.innerHTML='<div style="color:var(--muted);font-size:.78rem">لا توجد أوامر</div>';return;}
+  g.innerHTML=list.map((c,i)=>`
+    <div class="cmd-card" onclick="openCmdEditor('${c.name}')">
       <div class="cc-ico">${icons[i%icons.length]}</div>
       <div style="flex:1;min-width:0">
         <div class="cc-name">${c.name}</div>
         <div class="cc-desc">${c.description||'—'}</div>
-        ${c.adminOnly?`<span class="badge badge-admin">أدمن</span>`:''}
-        ${c.ownerOnly?`<span class="badge badge-owner">مالك</span>`:''}
+        <div>${c.adminOnly?`<span class="badge badge-admin">أدمن</span>`:''} ${c.ownerOnly?`<span class="badge badge-owner">مالك</span>`:''}</div>
       </div>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
-function filterCmds(q) {
-  const f = _allCmds.filter(c => c.name.includes(q)||c.description.includes(q));
+function filterCmds(q){
+  const f=_allCmds.filter(c=>c.name.includes(q.toLowerCase())||(c.description||'').toLowerCase().includes(q.toLowerCase()));
   renderCmds(f);
 }
-async function viewCmd(name) {
-  const r = await api(`/api/commands/${name}/source`);
-  if (!r.ok) return toast('تعذّر تحميل الكود', 'err');
-  const code = r.data.source;
-  if (!confirm(`معاينة كود "${name}"\n\n${code.slice(0,300)}…\n\nهل تريد حذف هذا الأمر؟`)) return;
-  const dr = await api(`/api/commands/${name}`, {method:'DELETE'});
-  if (dr.ok) { toast(`حُذف أمر ${name}`, 'ok'); loadCommands(); }
-  else toast(dr.data.error || 'خطأ', 'err');
+async function openCmdEditor(name){
+  const r=await apiFetch(`/api/commands/${name}/source`);
+  if(!r.ok)return toast('تعذّر تحميل الكود','err');
+  _editingCmd=name;
+  $('modal-cmd-title').textContent=`تعديل: ${name}`;
+  $('edit-cmd-name').value=name;
+  $('edit-cmd-src').value=r.data.source;
+  // Extract description/usage from source
+  const descMatch=r.data.source.match(/description:\s*["']([^"']+)["']/);
+  const usageMatch=r.data.source.match(/usage:\s*["']([^"']+)["']/);
+  const catMatch=r.data.source.match(/category:\s*["']([^"']+)["']/);
+  $('edit-cmd-desc').value=descMatch?descMatch[1]:'';
+  $('edit-cmd-usage').value=usageMatch?usageMatch[1]:'';
+  if(catMatch){const sel=$('edit-cmd-cat');for(const o of sel.options)if(o.value===catMatch[1])o.selected=true;}
+  $('edit-cmd-media').style.display='none';
+  openModal('modal-cmd');
 }
-function openAddCmd() { $('add-cmd-modal').classList.remove('hidden'); $('add-cmd-modal').style.display='flex'; }
-function closeAddCmd() { $('add-cmd-modal').classList.add('hidden'); }
-async function saveNewCmd() {
-  const name = $('new-cmd-name').value.trim();
-  const source = $('new-cmd-src').value.trim();
-  if (!name||!source) return toast('اسم وكود مطلوبان', 'err');
-  const r = await api('/api/commands', { method:'POST', body: JSON.stringify({name, source}) });
-  if (r.ok) { toast(`أُضيف أمر ${name}`, 'ok'); closeAddCmd(); loadCommands(); }
-  else toast(r.data.error || 'خطأ', 'err');
+async function saveCmd(){
+  let src=$('edit-cmd-src').value.trim();if(!src)return toast('الكود فارغ','err');
+  // Inject updated description/usage if changed
+  const desc=$('edit-cmd-desc').value.trim();
+  const usage=$('edit-cmd-usage').value.trim();
+  if(desc)src=src.replace(/(description:\s*["'])([^"']*)["']/,`$1${desc}'`);
+  if(usage)src=src.replace(/(usage:\s*["'])([^"']*)["']/,`$1${usage}'`);
+  const r=await apiFetch(`/api/commands/${_editingCmd}`,{method:'PUT',body:JSON.stringify({source:src})});
+  if(r.ok){toast(`✅ تم حفظ ${_editingCmd}`,'ok');closeModal('modal-cmd');loadCommands();}
+  else toast(r.data.error||'خطأ','err');
+}
+async function deleteCmd(){
+  if(!confirm(`حذف أمر "${_editingCmd}"؟`))return;
+  const r=await apiFetch(`/api/commands/${_editingCmd}`,{method:'DELETE'});
+  if(r.ok){toast(`🗑️ حُذف ${_editingCmd}`,'ok');closeModal('modal-cmd');loadCommands();}
+  else toast(r.data.error||'خطأ','err');
+}
+function openAddCmd(){$('new-cmd-name').value='';$('new-cmd-src').value='';openModal('modal-add-cmd');}
+function fillTemplate(){
+  const name=$('new-cmd-name').value.trim()||'mycommand';
+  $('new-cmd-src').value=`module.exports = {
+  config: {
+    name: "${name}",
+    aliases: [],
+    description: "وصف الأمر",
+    usage: "${name}",
+    adminOnly: false,
+    ownerOnly: false,
+    category: "general",
+  },
+  async run({ api, event, args, threadID, senderID, prefix, isAdmin }) {
+    // كودك هنا
+    await api.sendMessage("مرحباً! هذا أمر ${name}", threadID);
+  },
+};`;
+}
+async function saveNewCmd(){
+  const name=$('new-cmd-name').value.trim();
+  const source=$('new-cmd-src').value.trim();
+  if(!name||!source)return toast('الاسم والكود مطلوبان','err');
+  const r=await apiFetch('/api/commands',{method:'POST',body:JSON.stringify({name,source})});
+  if(r.ok){toast(`✅ أُضيف ${name}`,'ok');closeModal('modal-add-cmd');loadCommands();}
+  else toast(r.data.error||'خطأ','err');
+}
+function formatCode(){const ta=$('edit-cmd-src');ta.value=ta.value;}
+
+// Insert media reference into code editor
+function insertMediaRef(){
+  $('edit-cmd-media').style.display='block';
+  loadMediaForPicker('edit-media-picker','edit-cmd-src');
+}
+function insertMediaRefNew(){
+  // open media picker inline in add modal
+  loadMediaForPicker('edit-media-picker-new','new-cmd-src');
+}
+async function loadMediaForPicker(gridId,taId){
+  const r=await apiFetch('/api/media');if(!r.ok)return;
+  const grid=$(gridId)||$('edit-media-picker');
+  grid.innerHTML=r.data.map(f=>`
+    <div class="media-card" onclick="insertMediaIntoCode('${f.url}','${f.filename}','${f.type}','${taId}')">
+      <div class="mc-thumb">${f.type==='image'?`<img src="${f.url}" loading="lazy">`:`<div class="mc-ico">${f.type==='video'?'🎬':f.type==='audio'?'🎵':'📄'}</div>`}</div>
+      <div class="mc-info"><div class="mc-name">${f.filename}</div></div>
+    </div>`).join('')||'<div style="color:var(--muted);font-size:.74rem">لا توجد ملفات — ارفع من صفحة الوسائط</div>';
+}
+function insertMediaIntoCode(url,filename,type,taId){
+  const ta=$(taId||'edit-cmd-src');
+  const ext=filename.split('.').pop().toLowerCase();
+  let snippet='';
+  if(type==='image'||type==='video'||type==='audio'){
+    snippet=`\n    // إرسال ملف وسائط: ${filename}\n    const fs=require('fs-extra'),path=require('path');\n    api.sendMessage({body:'',attachment:fs.createReadStream(path.join(__dirname,'../../src/dashboard/public${url}'))},threadID);\n`;
+  } else {
+    snippet=`\n    // رابط الملف: ${url}\n`;
+  }
+  const pos=ta.selectionStart;ta.value=ta.value.slice(0,pos)+snippet+ta.value.slice(ta.selectionEnd);
+  toast('تم إدراج مرجع الوسائط','ok');
 }
 
+/* ══ MEDIA ══ */
+async function loadMedia(){
+  const r=await apiFetch('/api/media');
+  _allMedia=r.ok?r.data:[];
+  $('media-count').textContent=`(${_allMedia.length} ملف)`;
+  const grid=$('media-grid');
+  if(!_allMedia.length){grid.innerHTML='<div style="color:var(--muted);font-size:.78rem">لا توجد ملفات مرفوعة</div>';return;}
+  grid.innerHTML=_allMedia.map(f=>`
+    <div class="media-card">
+      <div class="mc-thumb">${f.type==='image'?`<img src="${f.url}" loading="lazy">`:`<div class="mc-ico">${f.type==='video'?'🎬':f.type==='audio'?'🎵':'📄'}</div>`}</div>
+      <button class="mc-del" onclick="deleteMedia('${f.filename}',event)">🗑️</button>
+      <div class="mc-info">
+        <div class="mc-name" title="${f.filename}">${f.filename}</div>
+        <div class="mc-size">${fmtSize(f.size)}</div>
+        <div class="media-url-badge" onclick="copyUrl('${f.url}')" title="انسخ الرابط">${f.url}</div>
+      </div>
+    </div>`).join('');
+}
+async function uploadMedia(file){
+  if(!file)return;
+  $('drop-zone').classList.add('drag');
+  showStatus('upload-status',`جارٍ رفع: ${file.name}…`,'info');
+  const fd=new FormData();fd.append('file',file);
+  try{
+    const r=await fetch('/api/media/upload',{method:'POST',body:fd});
+    const d=await r.json();$('drop-zone').classList.remove('drag');
+    if(d.success){showStatus('upload-status',`✅ تم رفع: ${d.filename}`,'ok');toast('تم الرفع بنجاح','ok');loadMedia();}
+    else showStatus('upload-status',d.error||'فشل الرفع','err');
+  }catch(e){$('drop-zone').classList.remove('drag');showStatus('upload-status','خطأ في الرفع: '+e.message,'err');}
+  $('media-file-input').value='';
+}
+function handleDrop(e){
+  e.preventDefault();$('drop-zone').classList.remove('drag');
+  const file=e.dataTransfer.files[0];if(file)uploadMedia(file);
+}
+async function deleteMedia(filename,e){
+  e.stopPropagation();
+  if(!confirm(`حذف ${filename}؟`))return;
+  const r=await apiFetch(`/api/media/${filename}`,{method:'DELETE'});
+  if(r.ok){toast('تم الحذف','ok');loadMedia();}else toast(r.data.error||'خطأ','err');
+}
+function copyUrl(url){navigator.clipboard.writeText(url).then(()=>toast('تم نسخ الرابط','ok')).catch(()=>toast('تعذّر النسخ','err'));}
+
 /* ══ SEND ══ */
-async function sendMsg() {
-  const threadID = $('send-tid').value.trim();
-  const message  = $('send-msg').value.trim();
-  if (!threadID||!message) return showStatus('send-status','معرّف المحادثة والرسالة مطلوبان','err');
-  const btn = $('send-btn'); btn.disabled=true; btn.textContent='…';
-  const r = await api('/api/send', {method:'POST', body:JSON.stringify({threadID, message})});
-  btn.disabled=false; btn.textContent='📤 إرسال';
-  if (r.ok) { showStatus('send-status','✅ أُرسلت بنجاح','ok'); $('send-msg').value=''; }
-  else showStatus('send-status', r.data.error||'خطأ', 'err');
+async function sendMsg(){
+  const threadID=$('send-tid').value.trim(),message=$('send-msg').value.trim();
+  if(!threadID||!message)return showStatus('send-status','معرّف المحادثة والرسالة مطلوبان','err');
+  const btn=$('send-btn');btn.disabled=true;btn.textContent='…';
+  const r=await apiFetch('/api/send',{method:'POST',body:JSON.stringify({threadID,message})});
+  btn.disabled=false;btn.textContent='📤 إرسال';
+  if(r.ok){showStatus('send-status','✅ أُرسلت بنجاح','ok');$('send-msg').value='';}
+  else showStatus('send-status',r.data.error||'خطأ','err');
 }
 
 /* ══ LOG ══ */
-const _logItems = [];
-function addLog(d) {
-  _logItems.unshift(d);
-  if (_logItems.length > 100) _logItems.length = 100;
-  const el = $('msg-log');
-  const time = new Date(d.timestamp).toLocaleTimeString('ar-DZ',{hour12:false});
-  const item = document.createElement('div');
-  item.className = 'log-item';
-  item.innerHTML = `
+function addLog(d){
+  const el=$('msg-log');
+  const empty=el.querySelector('[style*="انتظار"]');if(empty)empty.remove();
+  const time=new Date(d.timestamp||Date.now()).toLocaleTimeString('ar-DZ',{hour12:false});
+  const item=document.createElement('div');item.className='log-item';
+  const isCmd=d.body&&d.body.startsWith(window._prefix||'/');
+  item.innerHTML=`
     <div class="li-meta">
-      <span>${time}</span>
-      <span class="li-thread">${d.threadID||'?'}</span>
-      ${d.isGroup?'<span class="li-group">مجموعة</span>':''}
-      <span>من: ${d.senderID||'?'}</span>
+      <span style="color:var(--muted)">${time}</span>
+      ${d.isGroup?`<span class="li-group">👥 ${d.threadName||d.threadID||'?'}</span>`:`<span style="color:var(--green);font-size:.6rem">💬 DM</span>`}
+      <span class="li-name">@${d.senderName||d.senderID||'?'}</span>
+      ${isCmd?`<span class="li-cmd">⚡ أمر</span>`:''}
     </div>
-    <div class="li-body">${String(d.body||'').slice(0,200)}</div>
-  `;
-  const container = el.querySelector('div[style*="انتظار"]');
-  if (container) container.remove();
-  el.insertBefore(item, el.firstChild);
+    <div class="li-body">${String(d.body||'').slice(0,300)||'<em style="color:var(--muted)">بدون نص</em>'}</div>`;
+  el.insertBefore(item,el.firstChild);
+  while(el.children.length>150)el.removeChild(el.lastChild);
 }
-function clearLog() { $('msg-log').innerHTML = '<div style="color:var(--muted);font-size:.78rem;text-align:center;padding:20px">انتظار الرسائل…</div>'; _logItems.length=0; }
+function addCmdLog(d){
+  const el=$('msg-log');
+  const empty=el.querySelector('[style*="انتظار"]');if(empty)empty.remove();
+  const time=new Date(d.timestamp||Date.now()).toLocaleTimeString('ar-DZ',{hour12:false});
+  const item=document.createElement('div');item.className='log-item';
+  item.style.borderColor='var(--green)';
+  item.innerHTML=`<div class="li-meta"><span style="color:var(--muted)">${time}</span><span class="li-cmd">⚡ ${d.cmdName}</span><span class="li-name">uid:${d.senderID||'?'}</span></div>`;
+  el.insertBefore(item,el.firstChild);
+}
+function clearLog(){$('msg-log').innerHTML='<div style="color:var(--muted);font-size:.78rem;text-align:center;padding:20px">انتظار الرسائل…</div>';}
 
 /* ══ ADMINS ══ */
-async function loadAdmins() {
-  const r = await api('/api/admins');
-  if (!r.ok) return;
-  const d = r.data;
-  const el = $('admin-list');
-  const rows = [];
-  if (d.ownerID) rows.push(`<div class="admin-row"><span class="admin-uid">${d.ownerID}</span><span class="admin-badge owner">مالك</span></div>`);
-  for (const id of (d.adminIDs||[])) {
-    rows.push(`<div class="admin-row"><span class="admin-uid">${id}</span><span class="admin-badge">أدمن</span><button class="btn btn-danger btn-sm" onclick="removeAdmin('${id}')">🗑️</button></div>`);
-  }
-  el.innerHTML = rows.length ? rows.join('') : '<div style="color:var(--muted);font-size:.78rem">لا يوجد أدمنز</div>';
+async function loadAdmins(){
+  const r=await apiFetch('/api/admins');if(!r.ok)return;const d=r.data;
+  const el=$('admin-list'),rows=[];
+  if(d.ownerID)rows.push(`<div class="admin-row"><span class="admin-uid">${d.ownerID}</span><span class="admin-badge owner">👑 مالك</span></div>`);
+  for(const id of(d.adminIDs||[]))rows.push(`<div class="admin-row"><span class="admin-uid">${id}</span><span class="admin-badge">أدمن</span><button class="btn btn-danger btn-sm" onclick="removeAdmin('${id}')">🗑️</button></div>`);
+  el.innerHTML=rows.length?rows.join(''):'<div style="color:var(--muted);font-size:.78rem">لا يوجد أدمنز</div>';
 }
-async function addAdmin() {
-  const uid = $('new-admin-uid').value.trim();
-  if (!uid) return toast('أدخل UID', 'err');
-  const r = await api('/api/admins', {method:'POST',body:JSON.stringify({uid})});
-  if (r.ok) { toast('تم إضافة الأدمن', 'ok'); $('new-admin-uid').value=''; loadAdmins(); }
-  else toast(r.data.error||'خطأ', 'err');
+async function addAdmin(){
+  const uid=$('new-admin-uid').value.trim();if(!uid)return toast('أدخل UID','err');
+  const r=await apiFetch('/api/admins',{method:'POST',body:JSON.stringify({uid})});
+  if(r.ok){toast('✅ تم إضافة الأدمن','ok');$('new-admin-uid').value='';loadAdmins();}else toast(r.data.error||'خطأ','err');
 }
-async function removeAdmin(uid) {
-  if (!confirm(`حذف ${uid}؟`)) return;
-  const r = await api(`/api/admins/${uid}`, {method:'DELETE'});
-  if (r.ok) { toast('تم الحذف', 'ok'); loadAdmins(); }
-  else toast(r.data.error||'خطأ', 'err');
+async function removeAdmin(uid){
+  if(!confirm(`حذف ${uid}؟`))return;
+  const r=await apiFetch(`/api/admins/${uid}`,{method:'DELETE'});
+  if(r.ok){toast('تم الحذف','ok');loadAdmins();}else toast(r.data.error||'خطأ','err');
 }
-async function changePw() {
-  const cur = $('pw-cur').value, nw = $('pw-new').value;
-  if (!cur||!nw) return showStatus('pw-status','الحقول مطلوبة','err');
-  const r = await api('/api/config/password',{method:'POST',body:JSON.stringify({current:cur,newPassword:nw})});
-  if (r.ok) { showStatus('pw-status','✅ تم تغيير كلمة المرور','ok'); $('pw-cur').value=''; $('pw-new').value=''; }
-  else showStatus('pw-status', r.data.error||'خطأ', 'err');
+async function changePw(){
+  const cur=$('pw-cur').value,nw=$('pw-new').value;if(!cur||!nw)return showStatus('pw-status','الحقول مطلوبة','err');
+  const r=await apiFetch('/api/config/password',{method:'POST',body:JSON.stringify({current:cur,newPassword:nw})});
+  if(r.ok){showStatus('pw-status','✅ تم التغيير','ok');$('pw-cur').value='';$('pw-new').value='';}
+  else showStatus('pw-status',r.data.error||'خطأ','err');
 }
 
 /* ══ CONFIG ══ */
-async function loadConfig() {
-  const r = await api('/api/config');
-  if (!r.ok) return;
-  const d = r.data;
-  $('cfg-name').value = d.botName||'jarfis';
-  $('cfg-prefix').value = d.prefix||'/';
-  $('cfg-owner').value = d.ownerID||'';
-  $('cfg-tz').value = d.timezone||'Africa/Algiers';
+async function loadConfig(){
+  const r=await apiFetch('/api/config');if(!r.ok)return;const d=r.data;
+  $('cfg-name').value=d.botName||'jarfis';$('cfg-prefix').value=d.prefix||'/';
+  $('cfg-owner').value=d.ownerID||'';$('cfg-tz').value=d.timezone||'Africa/Algiers';
+  window._prefix=d.prefix||'/';
 }
-async function saveConfig() {
-  const body = {
-    botName: $('cfg-name').value.trim(),
-    prefix:  $('cfg-prefix').value.trim() || '/',
-    ownerID: $('cfg-owner').value.trim(),
-    timezone: $('cfg-tz').value.trim(),
-  };
-  const r = await api('/api/config',{method:'POST',body:JSON.stringify(body)});
-  if (r.ok) { showStatus('cfg-status','✅ تم الحفظ','ok'); toast('تم حفظ الإعدادات','ok'); }
-  else showStatus('cfg-status', r.data.error||'خطأ', 'err');
+async function saveConfig(){
+  const body={botName:$('cfg-name').value.trim(),prefix:$('cfg-prefix').value.trim()||'/',ownerID:$('cfg-owner').value.trim(),timezone:$('cfg-tz').value.trim()};
+  const r=await apiFetch('/api/config',{method:'POST',body:JSON.stringify(body)});
+  if(r.ok){showStatus('cfg-status','✅ تم الحفظ','ok');toast('تم حفظ الإعدادات','ok');window._prefix=body.prefix;}
+  else showStatus('cfg-status',r.data.error||'خطأ','err');
 }
-async function restartBot() {
-  if (!confirm('إعادة تشغيل البوت؟')) return;
-  await api('/api/restart',{method:'POST'});
+async function restartBot(){
+  if(!confirm('إعادة تشغيل البوت الكاملة؟'))return;
+  await apiFetch('/api/restart',{method:'POST'});
   toast('جارٍ إعادة التشغيل…','info');
 }
 
 /* ══ READY ══ */
-async function onReady() {
-  initSocket();
-  await loadStats();
-  loadCookieStatus();
+async function onReady(){
+  initSocket();await loadStats();loadCookieStatus();
+  const cfg=await apiFetch('/api/config');if(cfg.ok)window._prefix=cfg.data.prefix||'/';
 }
-
-/* ══ AUTO INIT (if already logged in) ══ */
-(async () => {
-  const r = await api('/api/ping');
-  if (r.ok) {
-    const pr = await api('/api/stats');
-    if (pr.ok) {
-      $('login-screen').classList.add('hidden');
-      $('app').classList.remove('hidden');
-      await onReady();
-    }
-  }
+/* ══ AUTO INIT ══ */
+(async()=>{
+  const r=await apiFetch('/api/ping');
+  if(r.ok){const pr=await apiFetch('/api/stats');if(pr.ok){$('login-screen').classList.add('hidden');$('app').classList.remove('hidden');await onReady();}}
 })();
 </script>
 </body>
