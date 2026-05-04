@@ -56,7 +56,8 @@ async function getOrCreateThread(threadID, name) {
 }
 
 async function logCommand(userID, threadID, command, args, success = true) {
-  await CommandLog.create({ userID, threadID, command, args: args.join(" "), success });
+  const argsStr = Array.isArray(args) ? args.join(" ") : (args || "");
+  await CommandLog.create({ userID, threadID, command, args: argsStr, success });
 }
 
 async function getStats() {
