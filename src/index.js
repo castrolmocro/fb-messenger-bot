@@ -313,8 +313,8 @@ function startPolling(api, commands, config) {
       pollErrorCount++;
       // Only log every 10th consecutive error to avoid spam
       if (pollErrorCount === 1 || pollErrorCount % 10 === 0) {
-        const errMsg = e.message || e.error || String(e);
-        log.warn(`Poll error (${pollErrorCount}x): ${errMsg}`);
+        const errMsg = (() => { try { return e?.message || e?.error || JSON.stringify(e) || "unknown"; } catch(_){ return "error"; } })();
+        log.warn(`Poll (${pollErrorCount}x): ${errMsg}`);
       }
     }
   }
