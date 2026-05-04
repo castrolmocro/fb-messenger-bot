@@ -373,6 +373,31 @@ input.ck-input:focus{border-color:var(--accent)}
           <div class="ck-status" id="ck-status"></div>
         </div>
 
+        <!-- m_sess guide -->
+        <div class="panel" style="border-color:#eab30840">
+          <div class="panel-title"><span class="pt-icon">📖</span> كيف تحصل على كوكيز كاملة مع m_sess؟</div>
+          <div style="font-size:.74rem;color:var(--muted2);line-height:1.9">
+            <div style="background:#0d0d20;border:1px solid var(--border);border-radius:9px;padding:12px;margin-bottom:10px">
+              <div style="color:var(--yellow);font-weight:700;margin-bottom:6px">⚠️ بدون m_sess لن يستقبل البوت رسائل!</div>
+              <div><b style="color:#fff">الطريقة 1 — c3c Cookie Manager:</b><br>
+              1. افتح <span style="color:var(--accent2)">messenger.com</span> في المتصفح وسجّل دخول<br>
+              2. افتح <span style="color:var(--accent2)">facebook.com</span> في نفس المتصفح<br>
+              3. استخدم c3c أو Cookie-Editor لتصدير كوكيز <b>كلا الموقعين</b><br>
+              4. ادمجهما في مصفوفة JSON واحدة وارفعها هنا<br>
+              5. تأكد أن المصفوفة تحتوي على: <code>c_user</code>, <code>xs</code>, <code>m_sess</code>, <code>datr</code>
+              </div>
+            </div>
+            <div style="background:#0d0d20;border:1px solid var(--border);border-radius:9px;padding:12px">
+              <div><b style="color:#fff">الطريقة 2 — نص الكوكيز المباشر:</b><br>
+              1. افتح DevTools (F12) على <span style="color:var(--accent2)">messenger.com</span><br>
+              2. اذهب إلى Network → أي طلب → Headers → Request Headers<br>
+              3. انسخ قيمة <code>Cookie:</code> بالكامل<br>
+              4. الصقها في تبويب "نص" أعلاه
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Danger zone -->
         <div class="panel">
           <div class="panel-title"><span class="pt-icon">⚠️</span> منطقة الخطر</div>

@@ -1,58 +1,60 @@
-# FB Messenger Userbot v2.2.0
+# jarfis Bot v3.0 — WHITE Engine
 
-A Facebook Messenger bot built on `fca-unofficial` with full support for individual and group chat messages, a live dashboard, economy/coins system, SQLite database, and scheduled cron jobs.
+## المشروع
+بوت Facebook Messenger كامل مبني على fca-unofficial مع لوحة تحكم متكاملة.
 
-## Architecture
-
-- **Runtime**: Node.js (CommonJS)
-- **Bot Library**: fca-unofficial
-- **Dashboard**: Express + Socket.IO (serves on port 5000)
-- **Database**: SQLite via Sequelize (stored at `data/bot.db`)
-- **Entry Point**: `src/index.js`
-
-## Project Structure
-
+## التشغيل
 ```
-├── src/
-│   ├── index.js          # Main entry point
-│   ├── commands/         # All bot commands (25+ commands)
-│   ├── utils/
-│   │   ├── database.js   # SQLite / Sequelize models & helpers
-│   │   ├── loader.js     # Auto-load commands
-│   │   └── imageGen.js   # Image generation
-│   └── dashboard/
-│       ├── server.js     # Express + Socket.IO server
-│       └── public/       # Dashboard static HTML
-├── config.example.json   # Config template
-├── appstate.json         # Facebook cookies (gitignored)
-├── config.json           # Bot settings (gitignored)
-└── data/                 # SQLite database (gitignored)
+PORT=5000 npm start
+```
+لوحة التحكم: http://localhost:5000  
+كلمة المرور الافتراضية: `djamel2025*`
+
+## البنية
+```
+src/
+├── index.js              # نقطة الدخول الرئيسية
+├── commands/             # أوامر البوت (25+ أمر)
+├── dashboard/
+│   ├── server.js         # Express API + Socket.IO
+│   └── public/index.html # الواجهة (HTML/CSS/JS)
+├── protection/
+│   ├── stealth.js        # محرك التخفي (UA rotation, browsing)
+│   ├── outgoingThrottle.js # تقييد الرسائل
+│   ├── humanTyping.js    # محاكاة الكتابة البشرية
+│   ├── mqttHealthCheck.js # فحص صحة MQTT
+│   ├── keepAlive.js      # نبضة حياة
+│   └── rateLimit.js      # تقييد الأوامر
+└── utils/
+    ├── checkLiveCookie.js  # التحقق من صحة الكوكيز
+    ├── getFbstateFromToken.js # تحويل التوكن
+    ├── getMsess.js         # جلب m_sess
+    ├── database.js         # SQLite/Sequelize
+    └── loader.js           # تحميل الأوامر
 ```
 
-## Configuration
+## الكوكيز المطلوبة
+- `c_user` — معرّف الحساب ✅ مطلوب
+- `xs` — رمز الجلسة ✅ مطلوب
+- `m_sess` — جلسة Messenger 🔑 مطلوب للاستماع الفوري
+- `datr` — رمز التتبع ✅ موصى به
 
-Copy `config.example.json` to `config.json` and set:
-- `botName`: Display name
-- `prefix`: Command prefix (default `/`)
-- `ownerID`: Your Facebook UID (from `c_user` cookie)
-- `adminIDs`: Array of admin Facebook UIDs
-- `dashboardPort`: Port (overridden by `PORT=5000` in Replit)
-- `timezone`: Your timezone
+### كيفية الحصول على m_sess
+1. سجّل دخول في `messenger.com` + `facebook.com` في نفس المتصفح
+2. صدّر الكوكيز بـ c3c أو Cookie-Editor من **كلا الموقعين**
+3. ادمجهما وارفعهما من لوحة التحكم
 
-## Running
+## أنظمة الحماية (WHITE Engine)
+- **Stealth** — تصفح صفحات، تدوير User-Agent، نوم ليلي (1-8 صباحاً)
+- **Human Typing** — تأخير كتابة واقعي قبل كل رد
+- **Outgoing Throttle** — حد رسائل لكل محادثة وعالمياً
+- **MQTT Health Check** — إعادة اتصال تلقائي عند الانقطاع
+- **Keep-Alive** — نبضة كل 8-18 دقيقة
+- **Rate Limit** — 8 أوامر/10 ثوانٍ لكل مستخدم
 
-The app starts via `npm start` (workflow sets `PORT=5000`).
+## قاعدة البيانات
+SQLite — `data/bot.db`
+- Users, Threads, CommandLogs
 
-- Dashboard URL: `http://0.0.0.0:5000`
-- Upload Facebook cookies via the dashboard to connect the bot
-
-## Cookie Setup
-
-1. Open [messenger.com](https://messenger.com) in Chrome (click a conversation to get `m_sess`)
-2. Use Cookie-Editor extension → Export JSON
-3. Upload via the dashboard at `/`
-
-## Deployment
-
-Configured as a `vm` deployment (always-running) since it needs persistent WebSocket/MQTT connections.
-Run command: `node src/index.js`
+## GitHub
+https://github.com/castrolmocro/fb-messenger-bot
