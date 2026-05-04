@@ -1,0 +1,12 @@
+{
+  "botName": "FCA Bot",
+  "prefix": "/",
+  "ownerID": "YOUR_FB_UID",
+  "email": "",
+  "password": "",
+  "dashboardPort": 3000,
+  "timezone": "Africa/Algiers",
+  "adminIDs": [],
+  "forceLogin": false,
+  "cronJobs": []
+}
