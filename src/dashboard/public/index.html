@@ -2,1086 +2,979 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
 <title>jarfis — لوحة التحكم</title>
 <script src="/socket.io/socket.io.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#070711;--sidebar:#0b0b1c;--panel:#0f0f24;--border:#1a1a36;
-  --accent:#7c6cfc;--accent2:#00d4ff;--green:#22c55e;--red:#ef4444;
-  --orange:#f97316;--yellow:#eab308;--text:#c8c8d8;--muted:#4a4a6a;
-  --sidebar-w:230px;--header-h:56px;
+  --bg:#07070f;--sb:#0c0c1e;--panel:#101028;--card:#13132e;
+  --border:#1e1e40;--border2:#252550;
+  --accent:#7c6cfc;--accent2:#00d4ff;--accent3:#a78bfa;
+  --green:#22c55e;--red:#ef4444;--orange:#f97316;--yellow:#eab308;
+  --text:#d0d0e8;--muted:#4a4a72;--muted2:#6a6a9a;
+  --sb-w:220px;--hdr:52px;--radius:12px;
 }
-html,body{height:100%;overflow-x:hidden}
-body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text)}
+html,body{height:100%;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+a{color:inherit;text-decoration:none}
+button,input,select,textarea{font-family:inherit}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+.hidden{display:none!important}
 
-/* ── LOGIN ── */
+/* ══ LOGIN ══════════════════════════════════════════════════ */
 #login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999;padding:16px}
-#login-screen.hidden{display:none}
-.login-card{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:40px 32px;width:100%;max-width:380px;text-align:center}
-.login-logo{font-size:3rem;margin-bottom:8px}
-.login-title{font-size:1.5rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px}
-.login-sub{font-size:.78rem;color:var(--muted);margin-bottom:28px}
-.login-card input{width:100%;background:#090918;border:1px solid var(--border);border-radius:10px;color:var(--text);padding:12px 16px;font-size:.95rem;outline:none;transition:border-color .2s;margin-bottom:14px;font-family:inherit;letter-spacing:2px;text-align:center}
-.login-card input:focus{border-color:var(--accent)}
-.login-btn{width:100%;padding:12px;border-radius:10px;border:none;font-size:.95rem;font-weight:700;cursor:pointer;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;transition:opacity .2s;font-family:inherit}
-.login-btn:hover{opacity:.85}
-.login-err{color:var(--red);font-size:.8rem;margin-top:10px;min-height:20px}
-.login-copy{color:var(--muted);font-size:.68rem;margin-top:20px}
+.lc{background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:36px 28px;width:100%;max-width:360px;text-align:center}
+.lc-ico{font-size:3rem;margin-bottom:6px}
+.lc-title{font-size:1.45rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:2px}
+.lc-sub{font-size:.72rem;color:var(--muted);margin-bottom:24px}
+.lc input{width:100%;background:#080816;border:1px solid var(--border);border-radius:10px;color:var(--text);padding:11px 14px;font-size:.9rem;outline:none;transition:border .2s;margin-bottom:12px;text-align:center;letter-spacing:2px}
+.lc input:focus{border-color:var(--accent)}
+.lc-btn{width:100%;padding:11px;border-radius:10px;border:none;font-size:.9rem;font-weight:700;cursor:pointer;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;transition:opacity .2s}
+.lc-btn:hover{opacity:.85}
+.lc-err{color:var(--red);font-size:.75rem;margin-top:8px;min-height:18px}
+.lc-copy{color:var(--muted);font-size:.64rem;margin-top:18px}
 
-/* ── LAYOUT ── */
+/* ══ LAYOUT ═════════════════════════════════════════════════ */
 #app{display:flex;min-height:100vh}
-#app.hidden{display:none}
-#sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);background:var(--sidebar);border-left:1px solid var(--border);display:flex;flex-direction:column;position:fixed;right:0;top:0;bottom:0;z-index:50;transition:transform .3s}
-#main{margin-right:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
+#sidebar{width:var(--sb-w);background:var(--sb);border-left:1px solid var(--border);display:flex;flex-direction:column;position:fixed;right:0;top:0;bottom:0;z-index:100;transition:transform .3s cubic-bezier(.4,0,.2,1)}
+#main{margin-right:var(--sb-w);flex:1;display:flex;flex-direction:column;min-height:100vh;transition:margin .3s}
+#overlay{position:fixed;inset:0;background:#000a;z-index:99;display:none}
 
-/* ── SIDEBAR ── */
-.sb-brand{padding:18px 16px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
-.sb-brand .logo{font-size:1.6rem;flex-shrink:0}
-.sb-brand .name{font-size:1rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.2}
-.sb-brand .sub{font-size:.62rem;color:var(--muted)}
-.sb-status{margin:10px 12px;padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:#080816;display:flex;align-items:center;gap:8px;font-size:.74rem}
-#sb-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex-shrink:0;transition:background .3s}
+/* ══ MOBILE ══════════════════════════════════════════════════ */
+#menu-btn{display:none;position:fixed;top:10px;left:10px;z-index:200;background:var(--panel);border:1px solid var(--border);border-radius:9px;width:38px;height:38px;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem;color:var(--text)}
+@media(max-width:768px){
+  #sidebar{transform:translateX(-100%);right:auto;left:0;border-left:none;border-right:1px solid var(--border)}
+  #sidebar.open{transform:translateX(0)}
+  #overlay.show{display:block}
+  #main{margin-right:0}
+  #menu-btn{display:flex}
+  .page-header{padding:14px 14px 0}
+  .cards-grid{grid-template-columns:repeat(2,1fr)!important}
+  .stat-card{padding:14px!important}
+  .page-content{padding:14px!important}
+}
+
+/* ══ SIDEBAR ════════════════════════════════════════════════ */
+.sb-brand{padding:16px 14px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px;flex-shrink:0}
+.sb-brand .logo{font-size:1.5rem}
+.sb-brand .info .name{font-size:.95rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sb-brand .info .ver{font-size:.6rem;color:var(--muted)}
+.sb-status-box{margin:8px 10px;padding:9px 11px;border-radius:10px;border:1px solid var(--border);background:#080816;display:flex;align-items:center;gap:8px}
+#sb-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex-shrink:0;transition:all .4s}
 #sb-dot.online{background:var(--green);box-shadow:0 0 8px var(--green)}
 #sb-dot.error{background:var(--orange);box-shadow:0 0 8px var(--orange)}
 #sb-dot.offline{background:var(--red)}
-#sb-msg{color:var(--text);font-size:.71rem;line-height:1.3;word-break:break-all}
-nav{flex:1;padding:6px 0;overflow-y:auto}
-.nav-group{padding:10px 14px 4px;font-size:.6rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
-.nav-item{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;font-size:.84rem;color:var(--muted);transition:all .15s;border-right:3px solid transparent;user-select:none}
-.nav-item:hover{color:var(--text);background:#ffffff08}
-.nav-item.active{color:var(--accent2);background:#00d4ff10;border-right-color:var(--accent2)}
-.nav-item .ni{font-size:1.05rem;width:20px;text-align:center;flex-shrink:0}
-.sb-footer{padding:12px 14px;border-top:1px solid var(--border);font-size:.67rem;color:var(--muted);line-height:1.7}
-.sb-footer span{color:var(--accent2);font-family:monospace}
-.logout-btn{width:100%;padding:7px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:.74rem;cursor:pointer;margin-top:8px;transition:all .2s;font-family:inherit}
+#sb-msg{font-size:.68rem;color:var(--text);line-height:1.35;word-break:break-all;flex:1}
+nav{flex:1;overflow-y:auto;padding:4px 0}
+.nav-section{padding:8px 12px 3px;font-size:.58rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 14px;cursor:pointer;font-size:.82rem;color:var(--muted2);transition:all .15s;border-right:3px solid transparent;user-select:none;border-left:3px solid transparent}
+.nav-item:hover{color:var(--text);background:#ffffff07}
+.nav-item.active{color:var(--accent2);background:#00d4ff0d;border-left-color:var(--accent2)}
+.nav-item .ni{font-size:1rem;width:18px;text-align:center;flex-shrink:0}
+.sb-footer{padding:10px 12px;border-top:1px solid var(--border);flex-shrink:0}
+.sb-footer .uid-row{font-size:.64rem;color:var(--muted);margin-bottom:6px;word-break:break-all}
+.sb-footer .uid-row span{color:var(--accent2)}
+.logout-btn{width:100%;padding:7px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted2);font-size:.72rem;cursor:pointer;transition:all .2s}
 .logout-btn:hover{background:var(--red);color:#fff;border-color:var(--red)}
 
-/* ── HEADER ── */
-header{background:linear-gradient(135deg,#0c0c22,#121232);border-bottom:1px solid var(--border);padding:0 20px;height:var(--header-h);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40}
-.header-title{font-size:.95rem;font-weight:600;color:var(--text)}
-.header-right{display:flex;align-items:center;gap:10px}
-.header-uid{font-size:.7rem;color:var(--muted);background:#0a0a1a;border:1px solid var(--border);padding:4px 10px;border-radius:6px;font-family:monospace}
-#hamburger{display:none;background:none;border:none;color:var(--text);font-size:1.4rem;cursor:pointer;padding:6px}
+/* ══ HEADER ═════════════════════════════════════════════════ */
+.page-header{padding:20px 20px 0;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.page-title{font-size:1.15rem;font-weight:800;color:#fff;display:flex;align-items:center;gap:8px}
+.page-desc{font-size:.72rem;color:var(--muted2);margin-top:2px}
+.page-content{padding:16px 20px 30px;flex:1}
 
-/* ── CONTENT ── */
-.content{padding:20px;flex:1}
-.page{display:none}.page.active{display:block}
+/* ══ CARDS ══════════════════════════════════════════════════ */
+.cards-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;align-items:flex-start;gap:12px;transition:border-color .2s}
+.stat-card:hover{border-color:var(--border2)}
+.stat-card .ico{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.stat-card .data .val{font-size:1.4rem;font-weight:800;color:#fff;line-height:1}
+.stat-card .data .lbl{font-size:.65rem;color:var(--muted2);margin-top:3px}
+.stat-card .data .sub{font-size:.62rem;color:var(--muted);margin-top:2px}
 
-/* ── OVERLAY ── */
-#overlay{display:none;position:fixed;inset:0;background:#00000060;z-index:45}
-#overlay.show{display:block}
+/* ══ PANELS ═════════════════════════════════════════════════ */
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:14px}
+.panel-title{font-size:.82rem;font-weight:700;color:#fff;margin-bottom:14px;display:flex;align-items:center;gap:7px}
+.panel-title .pt-icon{font-size:1rem}
 
-/* ── CARDS ── */
-.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:20px}
-.card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px 12px;text-align:center;transition:border-color .2s,transform .15s}
-.card:hover{border-color:var(--accent);transform:translateY(-2px)}
-.card .ci{font-size:1.5rem;margin-bottom:6px}
-.card .cv{font-size:1.65rem;font-weight:700;color:var(--accent2)}
-.card .cl{font-size:.68rem;color:var(--muted);margin-top:4px}
+/* ══ COOKIE TABS ════════════════════════════════════════════ */
+.cookie-tabs{display:flex;gap:4px;margin-bottom:14px;background:#080816;padding:4px;border-radius:10px;border:1px solid var(--border)}
+.cookie-tab{flex:1;padding:7px 6px;border-radius:8px;border:none;background:transparent;color:var(--muted2);font-size:.75rem;cursor:pointer;transition:all .2s;font-weight:600;white-space:nowrap}
+.cookie-tab.active{background:var(--accent);color:#fff}
+.cookie-pane{display:none}
+.cookie-pane.active{display:block}
+.cookie-hint{font-size:.68rem;color:var(--muted);background:#08081a;border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:10px;line-height:1.6}
+.cookie-hint code{background:#1a1a40;padding:1px 4px;border-radius:4px;font-size:.65rem;color:var(--accent2)}
+textarea.ck-input{width:100%;min-height:130px;background:#080816;border:1px solid var(--border);border-radius:10px;color:var(--text);padding:11px 12px;font-size:.78rem;resize:vertical;outline:none;transition:border .2s;font-family:'Courier New',monospace;line-height:1.5}
+textarea.ck-input:focus{border-color:var(--accent)}
+input.ck-input{width:100%;background:#080816;border:1px solid var(--border);border-radius:10px;color:var(--text);padding:11px 12px;font-size:.82rem;outline:none;transition:border .2s}
+input.ck-input:focus{border-color:var(--accent)}
+.ck-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.btn{padding:9px 16px;border-radius:9px;border:none;font-size:.8rem;font-weight:700;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+.btn-primary:hover{opacity:.85}
+.btn-outline{background:transparent;border:1px solid var(--border2);color:var(--muted2)}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.btn-danger{background:var(--red);color:#fff}
+.btn-danger:hover{opacity:.85}
+.btn-success{background:var(--green);color:#fff}
+.btn-success:hover{opacity:.85}
+.btn-sm{padding:6px 11px;font-size:.73rem;border-radius:7px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.ck-status{margin-top:10px;padding:9px 12px;border-radius:9px;font-size:.75rem;display:none;align-items:flex-start;gap:8px;line-height:1.5}
+.ck-status.show{display:flex}
+.ck-status.ok{background:#052310;border:1px solid #22c55e40;color:var(--green)}
+.ck-status.warn{background:#1a1000;border:1px solid #f9731640;color:var(--orange)}
+.ck-status.err{background:#1a0505;border:1px solid #ef444440;color:var(--red)}
+.ck-status.info{background:#050a1a;border:1px solid #00d4ff40;color:var(--accent2)}
 
-/* ── SECTION ── */
-.sec{margin-bottom:22px}
-.sec-title{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
-.sec-title::after{content:'';flex:1;height:1px;background:var(--border)}
+/* ══ PROTECTION ═════════════════════════════════════════════ */
+.prot-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:520px){.prot-grid{grid-template-columns:1fr}}
+.prot-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;align-items:center;gap:10px}
+.prot-card .pc-ico{font-size:1.2rem;flex-shrink:0}
+.prot-card .pc-info{flex:1}
+.prot-card .pc-name{font-size:.8rem;font-weight:700;color:#fff}
+.prot-card .pc-desc{font-size:.64rem;color:var(--muted);margin-top:2px}
+.toggle-sw{position:relative;width:38px;height:21px;flex-shrink:0}
+.toggle-sw input{display:none}
+.toggle-sw .track{position:absolute;inset:0;background:var(--muted);border-radius:21px;transition:background .25s;cursor:pointer}
+.toggle-sw input:checked+.track{background:var(--green)}
+.toggle-sw .thumb{position:absolute;top:3px;right:3px;width:15px;height:15px;border-radius:50%;background:#fff;transition:transform .25s;pointer-events:none}
+.toggle-sw input:checked+.track+.thumb,.toggle-sw input:checked~.thumb{transform:translateX(-17px)}
 
-/* ── PANELS ── */
-.pnl{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px}
-.pnl+.pnl{margin-top:12px}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+/* ══ COMMANDS ════════════════════════════════════════════════ */
+.cmd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.cmd-card{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:11px;display:flex;align-items:center;gap:9px;transition:border-color .2s;cursor:pointer}
+.cmd-card:hover{border-color:var(--border2)}
+.cmd-card .cc-ico{width:32px;height:32px;border-radius:8px;background:#1a1a40;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+.cmd-card .cc-name{font-size:.82rem;font-weight:700;color:#fff}
+.cmd-card .cc-desc{font-size:.64rem;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.badge{display:inline-flex;padding:1px 6px;border-radius:5px;font-size:.6rem;font-weight:700;margin-top:3px}
+.badge-admin{background:#f9731620;color:var(--orange)}
+.badge-owner{background:#ef444420;color:var(--red)}
 
-/* ── ALERT ── */
-.alert{border-radius:10px;padding:12px 16px;font-size:.81rem;line-height:1.7;margin-bottom:14px}
-.alert-warn{background:#150f00;border:1px solid var(--orange);color:var(--orange)}
-.alert-info{background:#00141a;border:1px solid var(--accent2);color:var(--accent2)}
-.alert-err{background:#1a0000;border:1px solid var(--red);color:var(--red)}
-.alert b{display:block;margin-bottom:3px}
-.alert a{color:inherit;text-decoration:underline}
+/* ══ SEND MSG ════════════════════════════════════════════════ */
+.send-form{display:flex;flex-direction:column;gap:10px}
+.send-form input,.send-form textarea{background:#080816;border:1px solid var(--border);border-radius:9px;color:var(--text);padding:10px 12px;font-size:.82rem;outline:none;transition:border .2s;width:100%}
+.send-form input:focus,.send-form textarea:focus{border-color:var(--accent)}
+.send-form textarea{min-height:80px;resize:vertical}
 
-/* ── FORM ── */
-.fr{margin-bottom:12px}
-label{font-size:.73rem;color:var(--muted);display:block;margin-bottom:4px}
-input,textarea,select{width:100%;background:#090918;border:1px solid var(--border);border-radius:8px;color:var(--text);padding:9px 12px;font-size:.87rem;outline:none;transition:border-color .2s;font-family:inherit}
-input:focus,textarea:focus,select:focus{border-color:var(--accent)}
-textarea{resize:vertical}
-.btn{padding:9px 18px;border-radius:8px;border:none;font-size:.84rem;font-weight:600;cursor:pointer;transition:opacity .15s,transform .1s;font-family:inherit;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
-.btn:active{transform:scale(.97)}
-.btn:hover{opacity:.85}
-.btn-p{background:linear-gradient(135deg,var(--accent),#5b4ce0);color:#fff}
-.btn-s{background:linear-gradient(135deg,var(--green),#16a34a);color:#fff}
-.btn-d{background:linear-gradient(135deg,var(--red),#991b1b);color:#fff}
-.btn-o{background:linear-gradient(135deg,var(--orange),#c2410c);color:#fff}
-.btn-sm{padding:5px 12px;font-size:.76rem;border-radius:6px}
-.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted)}
-.btn-ghost:hover{border-color:var(--accent);color:var(--text);opacity:1}
-.btn-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.fb{font-size:.79rem;margin-top:8px;min-height:18px;line-height:1.5}
-.fb.ok{color:var(--green)}.fb.err{color:var(--red)}.fb.warn{color:var(--orange)}
+/* ══ LOG ═════════════════════════════════════════════════════ */
+#msg-log{max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:5px}
+.log-item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:.72rem;line-height:1.5}
+.log-item .li-meta{color:var(--muted);margin-bottom:2px;display:flex;gap:6px;flex-wrap:wrap}
+.log-item .li-body{color:var(--text)}
+.log-item .li-thread{color:var(--accent2)}
+.log-item .li-group{background:#7c6cfc20;color:var(--accent3);padding:1px 5px;border-radius:4px;font-size:.6rem}
 
-/* ── COOKIE STATUS ── */
-.ck-bar{display:flex;align-items:center;gap:10px;padding:10px 13px;background:#070714;border:1px solid var(--border);border-radius:8px;margin-bottom:13px;font-size:.8rem}
-.ck-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
-.ck-dot.ok{background:var(--green);box-shadow:0 0 5px var(--green)}
-.ck-dot.warn{background:var(--orange);box-shadow:0 0 5px var(--orange)}
-.ck-dot.none{background:var(--muted)}
+/* ══ ADMIN TABLE ═════════════════════════════════════════════ */
+.admin-list{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.admin-row{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--border);border-radius:9px;padding:8px 12px;gap:10px}
+.admin-uid{font-family:monospace;font-size:.78rem;color:var(--accent2);flex:1;word-break:break-all}
+.admin-badge{font-size:.63rem;padding:2px 7px;border-radius:5px;background:#22c55e20;color:var(--green)}
+.admin-badge.owner{background:#f9731620;color:var(--orange)}
 
-/* ── CONSOLE ── */
-#console-box{background:#040410;border:1px solid var(--border);border-radius:10px;padding:12px;height:400px;overflow-y:auto;font-family:'Cascadia Code','Courier New',monospace;font-size:.76rem;display:flex;flex-direction:column-reverse}
-.c-row{padding:3px 0;display:flex;gap:8px;border-bottom:1px solid #0a0a1e;word-break:break-all}
-.c-ts{color:#2d2d50;flex-shrink:0}
-.c-tag{flex-shrink:0;font-weight:700}
-.c-body{flex:1}
-.tag-msg{color:var(--accent2)}.tag-cmd{color:#a78bfa}.tag-evt{color:var(--green)}.tag-err{color:var(--red)}.tag-sys{color:var(--yellow)}.tag-ok{color:var(--green)}
-.console-toolbar{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:center}
-.ctag-btn{padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--panel);color:var(--muted);font-size:.72rem;cursor:pointer;transition:all .15s}
-.ctag-btn.active{border-color:var(--accent);color:var(--accent2);background:#7c6cfc18}
+/* ══ FORM ════════════════════════════════════════════════════ */
+.form-row{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.form-row label{font-size:.72rem;color:var(--muted2);font-weight:600}
+.form-row input,.form-row select{background:#080816;border:1px solid var(--border);border-radius:9px;color:var(--text);padding:9px 12px;font-size:.82rem;outline:none;transition:border .2s}
+.form-row input:focus,.form-row select:focus{border-color:var(--accent)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:480px){.form-grid{grid-template-columns:1fr}}
 
-/* ── COMMANDS ── */
-.cmd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
-.cmd-card{background:#09091e;border:1px solid var(--border);border-radius:10px;padding:13px;transition:border-color .2s;display:flex;flex-direction:column;gap:6px}
-.cmd-card:hover{border-color:var(--accent)}
-.cmd-head{display:flex;align-items:center;justify-content:space-between;gap:6px}
-.cmd-name{font-weight:700;color:var(--accent2);font-size:.9rem;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.cmd-actions{display:flex;gap:5px;flex-shrink:0}
-.cmd-desc{color:var(--muted);font-size:.74rem}
-.cmd-usage{color:#3f3f6a;font-size:.71rem;font-family:monospace}
-.badge{font-size:.6rem;padding:2px 7px;border-radius:4px;font-weight:700;text-transform:uppercase}
-.b-owner{background:#713f12;color:#fcd34d}
-.b-admin{background:#7c1d1d;color:#fca5a5}
-.b-pub{background:#164e63;color:#67e8f9}
-.cmd-search{margin-bottom:12px}
+/* ══ TOAST ═══════════════════════════════════════════════════ */
+#toast-wrap{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:7px;align-items:center;pointer-events:none;width:calc(100% - 32px);max-width:380px}
+.toast{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:10px 16px;font-size:.8rem;animation:toastIn .3s ease;box-shadow:0 8px 32px #0008;text-align:center}
+.toast.ok{border-color:#22c55e60;color:var(--green)}
+.toast.err{border-color:#ef444460;color:var(--red)}
+.toast.info{border-color:#00d4ff60;color:var(--accent2)}
+@keyframes toastIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 
-/* ── ADMINS ── */
-.admin-list{display:flex;flex-direction:column;gap:8px}
-.admin-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#09091e;border:1px solid var(--border);border-radius:8px;gap:10px}
-.admin-uid{font-family:monospace;font-size:.84rem;color:var(--accent2);word-break:break-all}
-.admin-badge{font-size:.65rem;padding:2px 8px;border-radius:4px;background:#713f12;color:#fcd34d;font-weight:700;flex-shrink:0}
+/* ══ SPINNER ═════════════════════════════════════════════════ */
+.spin{display:inline-block;width:14px;height:14px;border:2px solid #ffffff40;border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-/* ── MODAL ── */
-#modal-bg{display:none;position:fixed;inset:0;background:#000000a0;z-index:200;align-items:center;justify-content:center;padding:16px}
-#modal-bg.show{display:flex}
-.modal{background:var(--panel);border:1px solid var(--border);border-radius:14px;width:100%;max-width:680px;max-height:90vh;display:flex;flex-direction:column}
-.modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)}
-.modal-title{font-size:.95rem;font-weight:700;color:var(--text)}
-.modal-close{background:none;border:none;color:var(--muted);font-size:1.4rem;cursor:pointer;line-height:1;padding:2px 6px}
-.modal-close:hover{color:var(--red)}
-.modal-body{padding:20px;overflow-y:auto;flex:1}
-.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
-#modal-editor{font-family:'Cascadia Code','Courier New',monospace;font-size:.8rem;min-height:320px;background:#040412;border:1px solid var(--border);border-radius:8px;color:var(--text);padding:12px;resize:vertical}
-
-/* ── TOAST ── */
-#toast-box{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;z-index:500;pointer-events:none;width:calc(100% - 32px);max-width:380px}
-.toast{padding:12px 18px;border-radius:10px;font-size:.84rem;font-weight:600;animation:fadeIn .3s;opacity:1;transition:opacity .4s;text-align:center}
-.toast-ok{background:#052614;border:1px solid var(--green);color:var(--green)}
-.toast-err{background:#1a0505;border:1px solid var(--red);color:var(--red)}
-.toast-warn{background:#1a0e00;border:1px solid var(--orange);color:var(--orange)}
-@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-
-/* ── SCROLLBAR ── */
-::-webkit-scrollbar{width:4px;height:4px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
-
-/* ── HOME LOG ── */
-#home-log{height:210px;overflow-y:auto;padding:10px 12px;font-family:monospace;font-size:.76rem;display:flex;flex-direction:column-reverse}
-
-/* ── CONFIG FORM ── */
-.config-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-
-/* ── MOBILE ── */
-@media(max-width:768px){
-  #sidebar{transform:translateX(100%)}
-  #sidebar.open{transform:translateX(0)}
-  #main{margin-right:0}
-  #hamburger{display:block}
-  .two{grid-template-columns:1fr}
-  .stat-grid{grid-template-columns:repeat(2,1fr)}
-  .cmd-grid{grid-template-columns:1fr}
-  .config-grid{grid-template-columns:1fr}
-  .content{padding:14px}
-  .btn{font-size:.82rem;padding:8px 14px}
-  #modal-editor{min-height:240px}
-}
-@media(max-width:380px){
-  .stat-grid{grid-template-columns:repeat(2,1fr)}
-  .login-card{padding:28px 20px}
-}
+/* ══ MISC ════════════════════════════════════════════════════ */
+.dot-sep{color:var(--muted);margin:0 4px;font-size:.7em}
+.uptime-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:6px}
+.uptime-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px;width:0%;transition:width .8s}
+.divider{border:none;border-top:1px solid var(--border);margin:14px 0}
 </style>
 </head>
 <body>
 
-<!-- ════ LOGIN ════ -->
+<!-- MENU BTN (mobile) -->
+<button id="menu-btn" onclick="toggleSidebar()">☰</button>
+<div id="overlay" onclick="closeSidebar()"></div>
+
+<!-- LOGIN -->
 <div id="login-screen">
-  <div class="login-card">
-    <div class="login-logo">🤖</div>
-    <div class="login-title">jarfis</div>
-    <div class="login-sub">لوحة تحكم البوت — أدخل كلمة المرور</div>
-    <input type="password" id="login-pw" placeholder="••••••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
-    <button class="login-btn" onclick="doLogin()">دخول</button>
-    <div class="login-err" id="login-err"></div>
-    <div class="login-copy">© 2026 djamel — jarfis Bot v2.2.0<br>Powered by fca-unofficial</div>
+  <div class="lc">
+    <div class="lc-ico">🤖</div>
+    <div class="lc-title">jarfis Bot</div>
+    <div class="lc-sub">لوحة التحكم المتكاملة — v3.0</div>
+    <input type="password" id="login-pw" placeholder="كلمة المرور" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <button class="lc-btn" onclick="doLogin()">دخول</button>
+    <div class="lc-err" id="login-err"></div>
+    <div class="lc-copy">© 2026 djamel · Jarfis Bot v3.0</div>
   </div>
 </div>
 
-<!-- ════ APP ════ -->
+<!-- APP -->
 <div id="app" class="hidden">
 
-  <!-- Overlay for mobile -->
-  <div id="overlay" onclick="closeSidebar()"></div>
-
-  <!-- ── SIDEBAR ── -->
-  <aside id="sidebar">
+  <!-- SIDEBAR -->
+  <div id="sidebar">
     <div class="sb-brand">
       <div class="logo">🤖</div>
-      <div>
-        <div class="name">jarfis</div>
-        <div class="sub">by djamel</div>
+      <div class="info">
+        <div class="name">jarfis Bot</div>
+        <div class="ver">v3.0.0 · White Engine</div>
       </div>
     </div>
-    <div class="sb-status">
+    <div class="sb-status-box">
       <div id="sb-dot"></div>
-      <div id="sb-msg">جاري الاتصال…</div>
+      <div id="sb-msg">جارٍ الاتصال…</div>
     </div>
     <nav>
-      <div class="nav-group">عام</div>
-      <div class="nav-item active" onclick="goto('home')" id="nav-home"><span class="ni">🏠</span> الرئيسية</div>
-      <div class="nav-item" onclick="goto('console')" id="nav-console"><span class="ni">📡</span> الكونسل المباشر</div>
-      <div class="nav-group">إدارة البوت</div>
-      <div class="nav-item" onclick="goto('cookies')" id="nav-cookies"><span class="ni">🍪</span> الكوكيز</div>
-      <div class="nav-item" onclick="goto('send')" id="nav-send"><span class="ni">📤</span> إرسال رسالة</div>
-      <div class="nav-item" onclick="goto('commands')" id="nav-commands"><span class="ni">⌨️</span> الأوامر</div>
-      <div class="nav-group">الإعدادات</div>
-      <div class="nav-item" onclick="goto('config')" id="nav-config"><span class="ni">⚙️</span> إعدادات البوت</div>
-      <div class="nav-item" onclick="goto('admins')" id="nav-admins"><span class="ni">👑</span> الأدمنز</div>
+      <div class="nav-section">الرئيسية</div>
+      <div class="nav-item active" onclick="goto('dashboard')"><span class="ni">📊</span> لوحة التحكم</div>
+      <div class="nav-item" onclick="goto('cookies')"><span class="ni">🍪</span> الكوكيز</div>
+      <div class="nav-item" onclick="goto('protection')"><span class="ni">🛡️</span> الحماية</div>
+      <div class="nav-section">إدارة</div>
+      <div class="nav-item" onclick="goto('commands')"><span class="ni">⚙️</span> الأوامر</div>
+      <div class="nav-item" onclick="goto('send')"><span class="ni">💬</span> إرسال رسالة</div>
+      <div class="nav-item" onclick="goto('log')"><span class="ni">📝</span> سجل الرسائل</div>
+      <div class="nav-section">إعدادات</div>
+      <div class="nav-item" onclick="goto('admins')"><span class="ni">👑</span> الأدمنز</div>
+      <div class="nav-item" onclick="goto('config')"><span class="ni">🔧</span> الإعدادات</div>
     </nav>
     <div class="sb-footer">
-      مالك: <span id="sb-owner">—</span><br>
-      أدمنز: <span id="sb-admins-count">—</span><br>
-      <button class="logout-btn" onclick="doLogout()">🚪 تسجيل الخروج</button>
+      <div class="uid-row">UID: <span id="sb-uid">—</span></div>
+      <div class="uid-row">RAM: <span id="sb-ram">—</span> MB · Node <span id="sb-node">—</span></div>
+      <button class="logout-btn" onclick="doLogout()">تسجيل الخروج</button>
     </div>
-  </aside>
+  </div>
 
-  <!-- ── MAIN ── -->
+  <!-- MAIN -->
   <div id="main">
-    <header>
-      <div class="header-right">
-        <button id="hamburger" onclick="toggleSidebar()">☰</button>
-        <span class="header-title" id="hdr-page">🏠 الرئيسية</span>
+
+    <!-- ══ DASHBOARD ══ -->
+    <div id="page-dashboard" class="page">
+      <div class="page-header">
+        <div><div class="page-title"><span>📊</span> لوحة التحكم</div><div class="page-desc">حالة البوت الفورية</div></div>
+        <button class="btn btn-outline btn-sm" onclick="loadStats()">🔄 تحديث</button>
       </div>
-      <span class="header-uid" id="hdr-uid">UID: —</span>
-    </header>
-
-    <div class="content">
-
-      <!-- ══ HOME ══ -->
-      <div class="page active" id="page-home">
-        <div id="alert-msess" class="alert alert-warn" style="display:none">
-          <b>⚠️ m_sess مفقود — MQTT سيُرفض</b>
-          افتح <a href="https://www.messenger.com" target="_blank">messenger.com</a>، اضغط على محادثة، ثم صدّر الكوكيز وارفعها.
+      <div class="page-content">
+        <div class="cards-grid">
+          <div class="stat-card"><div class="ico" style="background:#7c6cfc20;color:var(--accent)">👥</div><div class="data"><div class="val" id="st-users">—</div><div class="lbl">مستخدم</div></div></div>
+          <div class="stat-card"><div class="ico" style="background:#00d4ff20;color:var(--accent2)">💬</div><div class="data"><div class="val" id="st-threads">—</div><div class="lbl">محادثة</div></div></div>
+          <div class="stat-card"><div class="ico" style="background:#22c55e20;color:var(--green)">⚡</div><div class="data"><div class="val" id="st-cmds">—</div><div class="lbl">أمر مُنفَّذ</div></div></div>
+          <div class="stat-card"><div class="ico" style="background:#f9731620;color:var(--orange)">🕐</div><div class="data"><div class="val" id="st-uptime">—</div><div class="lbl">وقت التشغيل</div></div></div>
         </div>
-
-        <div class="stat-grid">
-          <div class="card"><div class="ci">👥</div><div class="cv" id="s-users">—</div><div class="cl">مستخدمون</div></div>
-          <div class="card"><div class="ci">💬</div><div class="cv" id="s-threads">—</div><div class="cl">محادثات</div></div>
-          <div class="card"><div class="ci">⌨️</div><div class="cv" id="s-runs">—</div><div class="cl">أوامر مُنفَّذة</div></div>
-          <div class="card"><div class="ci">📦</div><div class="cv" id="s-loaded">—</div><div class="cl">أوامر محمَّلة</div></div>
-          <div class="card"><div class="ci">👑</div><div class="cv" id="s-admins">—</div><div class="cl">أدمنز</div></div>
-          <div class="card"><div class="ci">⏱️</div><div class="cv" id="s-uptime">—</div><div class="cl">وقت التشغيل</div></div>
-        </div>
-
-        <div class="two">
-          <div class="sec">
-            <div class="sec-title">📋 آخر الأحداث</div>
-            <div class="pnl" style="padding:0;overflow:hidden">
-              <div id="home-log"><div style="color:var(--muted)">في انتظار الأحداث…</div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;flex-wrap:wrap">
+          <div class="panel">
+            <div class="panel-title"><span class="pt-icon">🤖</span> معلومات البوت</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:.78rem"><span style="color:var(--muted2)">الاسم</span><span id="inf-name" style="color:#fff;font-weight:700">—</span></div>
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:.78rem"><span style="color:var(--muted2)">البادئة</span><span id="inf-prefix" style="color:var(--accent2);font-family:monospace;font-size:1rem">—</span></div>
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:.78rem"><span style="color:var(--muted2)">الأوامر</span><span id="inf-cmdcount" style="color:#fff;font-weight:700">—</span></div>
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:.78rem"><span style="color:var(--muted2)">الأدمنز</span><span id="inf-admins" style="color:#fff">—</span></div>
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:.78rem"><span style="color:var(--muted2)">الذاكرة</span><span id="inf-ram" style="color:var(--yellow)">—</span></div>
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:.78rem"><span style="color:var(--muted2)">Node.js</span><span id="inf-node" style="color:var(--muted2)">—</span></div>
             </div>
           </div>
-          <div class="sec">
-            <div class="sec-title">🔧 إجراءات سريعة</div>
-            <div class="pnl">
-              <div class="fr"><label>إعادة تشغيل البوت</label>
-                <button class="btn btn-o" style="width:100%" onclick="restartBot()">🔄 إعادة التشغيل</button>
-              </div>
-              <div class="fr"><label>حالة الكوكيز</label>
-                <div class="ck-bar" style="margin:0">
-                  <div class="ck-dot none" id="home-ck-dot"></div>
-                  <span id="home-ck-label" style="font-size:.78rem">جاري الفحص…</span>
-                </div>
-              </div>
-              <div style="margin-top:12px;font-size:.72rem;color:var(--muted);line-height:1.8;border-top:1px solid var(--border);padding-top:12px">
-                🤖 <b style="color:var(--text)" id="foot-botname">jarfis</b> — by <b style="color:var(--accent2)">djamel</b><br>
-                © 2026 جميع الحقوق محفوظة<br>
-                Powered by fca-unofficial
-              </div>
+          <div class="panel">
+            <div class="panel-title"><span class="pt-icon">🛡️</span> الحماية السريعة</div>
+            <div id="quick-prot" style="display:flex;flex-direction:column;gap:8px">
+              <div class="prot-card"><span class="pc-ico">⌨️</span><div class="pc-info"><div class="pc-name">محاكاة الكتابة</div><div class="pc-desc">Human Typing</div></div><label class="toggle-sw"><input type="checkbox" id="qt-typing" onchange="toggleProt('humanTyping',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
+              <div class="prot-card"><span class="pc-ico">🕵️</span><div class="pc-info"><div class="pc-name">وضع التخفي</div><div class="pc-desc">Stealth Engine</div></div><label class="toggle-sw"><input type="checkbox" id="qt-stealth" onchange="toggleProt('stealth',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
+              <div class="prot-card"><span class="pc-ico">📡</span><div class="pc-info"><div class="pc-name">فحص MQTT</div><div class="pc-desc">Auto-reconnect</div></div><label class="toggle-sw"><input type="checkbox" id="qt-mqtt" onchange="toggleProt('mqttHealth',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
+              <div class="prot-card"><span class="pc-ico">💓</span><div class="pc-info"><div class="pc-name">Keep-Alive</div><div class="pc-desc">نبضة كل 8-18 دقيقة</div></div><label class="toggle-sw"><input type="checkbox" id="qt-keepalive" onchange="toggleProt('keepAlive',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
             </div>
           </div>
         </div>
+        <style>@media(max-width:600px){#page-dashboard .page-content>div:nth-child(2){grid-template-columns:1fr!important}}</style>
       </div>
+    </div>
 
-      <!-- ══ CONSOLE ══ -->
-      <div class="page" id="page-console">
-        <div class="sec">
-          <div class="sec-title">📡 الكونسل المباشر</div>
-          <div class="console-toolbar">
-            <button class="ctag-btn active" onclick="filterConsole('all',this)">الكل</button>
-            <button class="ctag-btn" onclick="filterConsole('msg',this)">رسائل</button>
-            <button class="ctag-btn" onclick="filterConsole('cmd',this)">أوامر</button>
-            <button class="ctag-btn" onclick="filterConsole('evt',this)">أحداث</button>
-            <button class="ctag-btn" onclick="filterConsole('err',this)">أخطاء</button>
-            <button class="ctag-btn btn-ghost btn-sm" style="margin-right:auto" onclick="clearConsole()">🗑 مسح</button>
-          </div>
-          <div id="console-box">
-            <div class="c-row"><span class="c-ts">--:--:--</span><span class="c-tag tag-sys">[SYS]</span><span class="c-body" style="color:var(--muted)">في انتظار الاتصال…</span></div>
+    <!-- ══ COOKIES ══ -->
+    <div id="page-cookies" class="page hidden">
+      <div class="page-header">
+        <div><div class="page-title"><span>🍪</span> إدارة الكوكيز</div><div class="page-desc">رفع كوكيز c3c / Cookie-Editor / JSON / String / Token</div></div>
+      </div>
+      <div class="page-content">
+        <!-- Current cookie info -->
+        <div class="panel">
+          <div class="panel-title"><span class="pt-icon">📋</span> الحالة الراهنة</div>
+          <div id="ck-current" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+            <div style="font-size:.78rem;color:var(--muted)">جارٍ التحميل…</div>
           </div>
         </div>
-      </div>
 
-      <!-- ══ COOKIES ══ -->
-      <div class="page" id="page-cookies">
-        <div class="sec">
-          <div class="sec-title">🍪 إدارة الكوكيز</div>
+        <!-- Cookie input tabs -->
+        <div class="panel">
+          <div class="panel-title"><span class="pt-icon">⬆️</span> رفع كوكيز جديدة</div>
 
-          <div class="pnl">
-            <div class="ck-bar">
-              <div class="ck-dot none" id="ck-dot"></div>
-              <span id="ck-label">جاري الفحص…</span>
-            </div>
-
-            <div id="ck-info-box" style="display:none;margin-bottom:12px"></div>
-
-            <div class="fr">
-              <label>الصق الكوكيز هنا (صيغة c3c أو Cookie-Editor JSON):</label>
-              <textarea id="ck-input" style="height:130px;font-family:monospace;font-size:.74rem"
-                placeholder='[{"key":"c_user","value":"...","domain":"facebook.com",...},{"key":"xs","value":"..."},...]'></textarea>
-            </div>
-            <div class="btn-row">
-              <button class="btn btn-s" onclick="saveCookies()">💾 حفظ الكوكيز</button>
-              <button class="btn btn-ghost" onclick="validateCookies()">🔍 تحقق</button>
-              <button class="btn btn-d btn-sm" onclick="deleteCookies()">🗑 حذف</button>
-            </div>
-            <div class="fb" id="ck-fb"></div>
+          <div class="cookie-tabs">
+            <button class="cookie-tab active" onclick="setCkTab('json',this)">📋 JSON</button>
+            <button class="cookie-tab" onclick="setCkTab('string',this)">🔤 نص</button>
+            <button class="cookie-tab" onclick="setCkTab('token',this)">🔑 توكن</button>
           </div>
 
-          <div class="pnl">
-            <div class="sec-title" style="margin-bottom:10px">📖 دليل الكوكيز</div>
-            <div style="font-size:.78rem;color:var(--muted);line-height:1.9">
-              <b style="color:var(--text)">كيف تحصل على الكوكيز؟</b><br>
-              ١. افتح <a href="https://www.messenger.com" target="_blank" style="color:var(--accent2)">messenger.com</a> في Chrome<br>
-              ٢. سجّل الدخول واضغط على أي محادثة (ضروري لـ m_sess)<br>
-              ٣. افتح إضافة <b style="color:var(--text)">Cookie-Editor</b> ← Export JSON<br>
-              ٤. الصق النص هنا وانقر "حفظ الكوكيز"<br><br>
-              <b style="color:var(--text)">الكوكيز الأساسية:</b><br>
-              <span style="color:var(--green)">✔ c_user</span> — معرّف حسابك (ضروري)<br>
-              <span style="color:var(--green)">✔ xs</span> — رمز الجلسة (ضروري)<br>
-              <span style="color:var(--orange)">⚡ m_sess</span> — لـ MQTT (فتح محادثة من messenger.com)
+          <!-- JSON TAB -->
+          <div class="cookie-pane active" id="ck-pane-json">
+            <div class="cookie-hint">
+              <strong>📋 صيغة JSON</strong> — مصفوفة من الكوكيز مثل c3c / Cookie-Editor<br>
+              <code>[{"key":"c_user","value":"123..."},{"key":"xs","value":"abc..."},...]</code><br>
+              أو الصيغة الجديدة: <code>[{"name":"c_user","value":"123..."}]</code>
+            </div>
+            <textarea class="ck-input" id="ck-json-input" placeholder='[{"key":"c_user","value":"..."},{"key":"xs","value":"..."},{"key":"datr","value":"..."}]'></textarea>
+            <div class="ck-actions">
+              <button class="btn btn-primary" onclick="submitCookies('json')"><span class="spin" id="ck-json-spin" style="display:none"></span>💾 حفظ وتحقق</button>
+              <button class="btn btn-outline" onclick="validateOnly('json')">🔍 تحقق فقط</button>
+              <button class="btn btn-outline" onclick="clearInput('ck-json-input')">🗑️ مسح</button>
             </div>
           </div>
+
+          <!-- STRING TAB -->
+          <div class="cookie-pane" id="ck-pane-string">
+            <div class="cookie-hint">
+              <strong>🔤 نص الكوكيز</strong> — انسخ كوكيز من المتصفح مباشرة<br>
+              <code>c_user=123456; xs=abc:def; datr=xxx; sb=yyy</code><br>
+              يجب أن تحتوي على <code>c_user</code> و<code>xs</code> على الأقل
+            </div>
+            <textarea class="ck-input" id="ck-str-input" placeholder="c_user=123456789; xs=abc:def:ghi; datr=xxxxx; sb=yyyy"></textarea>
+            <div class="ck-actions">
+              <button class="btn btn-primary" onclick="submitCookies('string')"><span class="spin" id="ck-str-spin" style="display:none"></span>💾 حفظ وتحقق</button>
+              <button class="btn btn-outline" onclick="validateOnly('string')">🔍 تحقق فقط</button>
+              <button class="btn btn-outline" onclick="clearInput('ck-str-input')">🗑️ مسح</button>
+            </div>
+          </div>
+
+          <!-- TOKEN TAB -->
+          <div class="cookie-pane" id="ck-pane-token">
+            <div class="cookie-hint">
+              <strong>🔑 توكن Facebook</strong> — توكن يبدأ بـ EAAAA<br>
+              <code>EAAAA6z...لسنا مسؤولين عن صحة التوكن</code><br>
+              سيتم تحويل التوكن تلقائياً إلى كوكيز صالحة
+            </div>
+            <input class="ck-input" id="ck-tok-input" type="text" placeholder="EAAAA6z8X4Ba..."/>
+            <div class="ck-actions">
+              <button class="btn btn-primary" onclick="submitCookies('token')"><span class="spin" id="ck-tok-spin" style="display:none"></span>🔄 تحويل وحفظ</button>
+              <button class="btn btn-outline" onclick="clearInput('ck-tok-input')">🗑️ مسح</button>
+            </div>
+          </div>
+
+          <div class="ck-status" id="ck-status"></div>
         </div>
-      </div>
 
-      <!-- ══ SEND ══ -->
-      <div class="page" id="page-send">
-        <div class="sec">
-          <div class="sec-title">📤 إرسال رسالة</div>
-          <div class="pnl">
-            <div id="send-offline" class="alert alert-warn" style="display:none">
-              <b>⚠️ البوت غير متصل</b> — اربط الكوكيز أولاً لإرسال الرسائل.
-            </div>
-            <div class="fr">
-              <label>Thread ID (معرّف المحادثة)</label>
-              <input type="text" id="s-thread" placeholder="100012345678901"/>
-            </div>
-            <div class="fr">
-              <label>الرسالة</label>
-              <textarea id="s-body" style="height:110px" placeholder="اكتب رسالتك هنا…"></textarea>
-            </div>
-            <button class="btn btn-p" onclick="sendMsg()">📤 إرسال</button>
-            <div class="fb" id="s-fb"></div>
+        <!-- Danger zone -->
+        <div class="panel">
+          <div class="panel-title"><span class="pt-icon">⚠️</span> منطقة الخطر</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+            <div style="font-size:.76rem;color:var(--muted)">حذف الكوكيز المحفوظة نهائياً وقطع اتصال البوت</div>
+            <button class="btn btn-danger btn-sm" onclick="deleteCookies()">🗑️ حذف الكوكيز</button>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- ══ COMMANDS ══ -->
-      <div class="page" id="page-commands">
-        <div class="sec">
-          <div class="sec-title">⌨️ إدارة الأوامر</div>
-          <div class="btn-row" style="margin-bottom:14px">
-            <input type="text" id="cmd-q" placeholder="ابحث عن أمر…" oninput="filterCmds()" style="flex:1;min-width:120px"/>
-            <button class="btn btn-s" onclick="openAddCmd()">➕ أمر جديد</button>
+    <!-- ══ PROTECTION ══ -->
+    <div id="page-protection" class="page hidden">
+      <div class="page-header">
+        <div><div class="page-title"><span>🛡️</span> أنظمة الحماية</div><div class="page-desc">WHITE Engine — حماية الحساب</div></div>
+        <button class="btn btn-outline btn-sm" onclick="loadProtection()">🔄 تحديث</button>
+      </div>
+      <div class="page-content">
+        <div class="prot-grid">
+          <div class="prot-card">
+            <span class="pc-ico">⌨️</span>
+            <div class="pc-info">
+              <div class="pc-name">محاكاة الكتابة البشرية</div>
+              <div class="pc-desc">تأخير واقعي قبل كل رد — يمنع الكشف كبوت</div>
+            </div>
+            <label class="toggle-sw"><input type="checkbox" id="p-typing" onchange="toggleProt('humanTyping',this.checked)"><div class="track"></div><div class="thumb"></div></label>
           </div>
-          <div class="cmd-grid" id="cmd-grid">
-            <div style="color:var(--muted);font-size:.85rem">جاري التحميل…</div>
+          <div class="prot-card">
+            <span class="pc-ico">🕵️</span>
+            <div class="pc-info">
+              <div class="pc-name">محرك التخفي</div>
+              <div class="pc-desc">تصفح صفحات، تدوير UA، نوم ليلي (1-8 صباحاً)</div>
+            </div>
+            <label class="toggle-sw"><input type="checkbox" id="p-stealth" onchange="toggleProt('stealth',this.checked)"><div class="track"></div><div class="thumb"></div></label>
+          </div>
+          <div class="prot-card">
+            <span class="pc-ico">🐢</span>
+            <div class="pc-info">
+              <div class="pc-name">تقييد الرسائل الصادرة</div>
+              <div class="pc-desc">Throttle — يمنع إرسال رسائل كثيرة في وقت قصير</div>
+            </div>
+            <label class="toggle-sw"><input type="checkbox" id="p-throttle" onchange="toggleProt('throttle',this.checked)"><div class="track"></div><div class="thumb"></div></label>
+          </div>
+          <div class="prot-card">
+            <span class="pc-ico">📡</span>
+            <div class="pc-info">
+              <div class="pc-name">فحص صحة MQTT</div>
+              <div class="pc-desc">إعادة اتصال تلقائي عند انقطاع الاتصال</div>
+            </div>
+            <label class="toggle-sw"><input type="checkbox" id="p-mqtt" onchange="toggleProt('mqttHealth',this.checked)"><div class="track"></div><div class="thumb"></div></label>
+          </div>
+          <div class="prot-card">
+            <span class="pc-ico">💓</span>
+            <div class="pc-info">
+              <div class="pc-name">Keep-Alive</div>
+              <div class="pc-desc">نبضة كل 8-18 دقيقة للحفاظ على الجلسة</div>
+            </div>
+            <label class="toggle-sw"><input type="checkbox" id="p-keepalive" onchange="toggleProt('keepAlive',this.checked)"><div class="track"></div><div class="thumb"></div></label>
+          </div>
+          <div class="prot-card">
+            <span class="pc-ico">📊</span>
+            <div class="pc-info">
+              <div class="pc-name">تقييد الأوامر</div>
+              <div class="pc-desc">Rate Limit — 8 أوامر لكل 10 ثوانٍ لكل مستخدم</div>
+            </div>
+            <div style="font-size:.7rem;color:var(--green);font-weight:700">دائماً نشط</div>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-top:14px">
+          <div class="panel-title"><span class="pt-icon">📈</span> إحصائيات الحماية</div>
+          <div id="prot-stats" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px">
+            <div style="font-size:.75rem;color:var(--muted)">جارٍ التحميل…</div>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- ══ CONFIG ══ -->
-      <div class="page" id="page-config">
-        <div class="sec">
-          <div class="sec-title">⚙️ إعدادات البوت</div>
-          <div class="pnl">
-            <div class="config-grid">
-              <div class="fr"><label>اسم البوت</label><input type="text" id="cfg-name" placeholder="jarfis"/></div>
-              <div class="fr"><label>البادئة (Prefix)</label><input type="text" id="cfg-prefix" placeholder="/"/></div>
-              <div class="fr"><label>Owner ID (Facebook UID)</label><input type="text" id="cfg-owner" placeholder="61589268085924"/></div>
-              <div class="fr"><label>المنطقة الزمنية</label>
-                <select id="cfg-tz">
-                  <option value="Africa/Algiers">Africa/Algiers (الجزائر)</option>
-                  <option value="Africa/Cairo">Africa/Cairo (مصر)</option>
-                  <option value="Africa/Tunis">Africa/Tunis (تونس)</option>
-                  <option value="Africa/Casablanca">Africa/Casablanca (المغرب)</option>
-                  <option value="Asia/Riyadh">Asia/Riyadh (السعودية)</option>
-                  <option value="Asia/Dubai">Asia/Dubai (الإمارات)</option>
-                  <option value="Asia/Baghdad">Asia/Baghdad (العراق)</option>
-                  <option value="Europe/Paris">Europe/Paris</option>
-                  <option value="UTC">UTC</option>
-                </select>
-              </div>
-            </div>
-            <div class="fr"><label>User Agent (اختياري)</label>
-              <input type="text" id="cfg-ua" placeholder="Mozilla/5.0 ..."/>
-            </div>
-            <button class="btn btn-s" onclick="saveConfig()">💾 حفظ الإعدادات</button>
-            <div class="fb" id="cfg-fb"></div>
-          </div>
-
-          <div class="pnl">
-            <div class="sec-title" style="margin-bottom:14px">🔐 تغيير كلمة مرور اللوحة</div>
-            <div class="config-grid">
-              <div class="fr"><label>كلمة المرور الحالية</label><input type="password" id="pw-cur" placeholder="••••••••"/></div>
-              <div class="fr"><label>كلمة المرور الجديدة</label><input type="password" id="pw-new" placeholder="••••••••"/></div>
-            </div>
-            <button class="btn btn-o" onclick="changePassword()">🔑 تغيير كلمة المرور</button>
-            <div class="fb" id="pw-fb"></div>
-          </div>
-        </div>
+    <!-- ══ COMMANDS ══ -->
+    <div id="page-commands" class="page hidden">
+      <div class="page-header">
+        <div><div class="page-title"><span>⚙️</span> الأوامر</div><div class="page-desc">إدارة أوامر البوت</div></div>
+        <button class="btn btn-primary btn-sm" onclick="openAddCmd()">➕ أمر جديد</button>
       </div>
-
-      <!-- ══ ADMINS ══ -->
-      <div class="page" id="page-admins">
-        <div class="sec">
-          <div class="sec-title">👑 إدارة الأدمنز</div>
-          <div class="pnl">
-            <div class="fr">
-              <label>Owner ID الحالي</label>
-              <div class="ck-bar" style="margin:0"><span id="admins-owner" style="font-family:monospace;color:var(--accent2)">—</span> <span class="badge b-owner">مالك</span></div>
-            </div>
-            <div class="fr" style="margin-top:14px">
-              <label>إضافة أدمن جديد (Facebook UID)</label>
-              <div style="display:flex;gap:8px">
-                <input type="text" id="admin-uid-input" placeholder="61589268085924" style="flex:1"/>
-                <button class="btn btn-s" onclick="addAdmin()">➕ إضافة</button>
-              </div>
-            </div>
-            <div class="fb" id="admin-fb"></div>
-          </div>
-
-          <div class="pnl">
-            <div class="sec-title" style="margin-bottom:12px">قائمة الأدمنز</div>
-            <div class="admin-list" id="admin-list">
-              <div style="color:var(--muted);font-size:.85rem">لا يوجد أدمنز بعد</div>
+      <div class="page-content">
+        <div class="panel" style="margin-bottom:14px">
+          <input style="background:#080816;border:1px solid var(--border);border-radius:9px;color:var(--text);padding:9px 12px;font-size:.82rem;outline:none;width:100%" placeholder="🔍 بحث في الأوامر…" oninput="filterCmds(this.value)" id="cmd-search"/>
+        </div>
+        <div class="cmd-grid" id="cmd-grid">
+          <div style="color:var(--muted);font-size:.78rem">جارٍ التحميل…</div>
+        </div>
+        <!-- Add command modal -->
+        <div id="add-cmd-modal" class="hidden" style="position:fixed;inset:0;background:#000c;z-index:500;display:flex;align-items:center;justify-content:center;padding:16px">
+          <div class="panel" style="width:100%;max-width:560px;max-height:90vh;overflow-y:auto">
+            <div class="panel-title"><span>➕</span> إضافة أمر جديد</div>
+            <div class="form-row"><label>اسم الأمر</label><input id="new-cmd-name" placeholder="ping" /></div>
+            <div class="form-row"><label>الكود (JavaScript)</label><textarea id="new-cmd-src" style="background:#080816;border:1px solid var(--border);border-radius:9px;color:var(--text);padding:10px 12px;font-size:.75rem;min-height:200px;resize:vertical;width:100%;outline:none;font-family:monospace" placeholder='module.exports = {
+  config: { name: "ping", description: "اختبار البوت" },
+  run: async ({ api, event }) => {
+    await api.sendMessage("🏓 Pong!", event.threadID);
+  }
+};'></textarea></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-primary" onclick="saveNewCmd()">💾 حفظ</button>
+              <button class="btn btn-outline" onclick="closeAddCmd()">إلغاء</button>
             </div>
           </div>
         </div>
       </div>
+    </div>
 
-    </div><!-- /content -->
+    <!-- ══ SEND ══ -->
+    <div id="page-send" class="page hidden">
+      <div class="page-header">
+        <div><div class="page-title"><span>💬</span> إرسال رسالة</div><div class="page-desc">إرسال مباشر من لوحة التحكم</div></div>
+      </div>
+      <div class="page-content">
+        <div class="panel">
+          <div class="panel-title"><span class="pt-icon">📤</span> إرسال رسالة</div>
+          <div class="send-form">
+            <div class="form-row"><label>معرّف المحادثة (Thread ID)</label><input id="send-tid" placeholder="100xxxxxxxxxx أو ID المجموعة"/></div>
+            <div class="form-row"><label>الرسالة</label><textarea id="send-msg" placeholder="اكتب رسالتك هنا…"></textarea></div>
+            <button class="btn btn-primary" onclick="sendMsg()" id="send-btn">📤 إرسال</button>
+          </div>
+          <div class="ck-status" id="send-status" style="margin-top:12px"></div>
+        </div>
+      </div>
+    </div>
 
-    <footer style="padding:12px 20px;border-top:1px solid var(--border);font-size:.67rem;color:var(--muted);text-align:center">
-      🤖 jarfis Bot v2.2.0 — © 2026 <b style="color:var(--accent2)">djamel</b> — جميع الحقوق محفوظة — Powered by fca-unofficial
-    </footer>
+    <!-- ══ LOG ══ -->
+    <div id="page-log" class="page hidden">
+      <div class="page-header">
+        <div><div class="page-title"><span>📝</span> سجل الرسائل</div><div class="page-desc">الرسائل الواردة للبوت</div></div>
+        <button class="btn btn-outline btn-sm" onclick="clearLog()">🗑️ مسح السجل</button>
+      </div>
+      <div class="page-content">
+        <div class="panel">
+          <div id="msg-log"><div style="color:var(--muted);font-size:.78rem;text-align:center;padding:20px">انتظار الرسائل…</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ ADMINS ══ -->
+    <div id="page-admins" class="page hidden">
+      <div class="page-header">
+        <div><div class="page-title"><span>👑</span> الأدمنز</div><div class="page-desc">إدارة صلاحيات البوت</div></div>
+      </div>
+      <div class="page-content">
+        <div class="panel">
+          <div class="panel-title"><span class="pt-icon">👑</span> قائمة الأدمنز</div>
+          <div class="admin-list" id="admin-list"><div style="color:var(--muted);font-size:.78rem">جارٍ التحميل…</div></div>
+          <hr class="divider"/>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <input id="new-admin-uid" style="flex:1;min-width:180px;background:#080816;border:1px solid var(--border);border-radius:9px;color:var(--text);padding:9px 12px;font-size:.82rem;outline:none" placeholder="أدخل UID المستخدم"/>
+            <button class="btn btn-primary btn-sm" onclick="addAdmin()">➕ إضافة أدمن</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-title"><span class="pt-icon">🔑</span> تغيير كلمة المرور</div>
+          <div class="form-row"><label>كلمة المرور الحالية</label><input type="password" id="pw-cur" placeholder="••••••••"/></div>
+          <div class="form-row"><label>كلمة المرور الجديدة</label><input type="password" id="pw-new" placeholder="كلمة مرور جديدة"/></div>
+          <button class="btn btn-primary btn-sm" onclick="changePw()">💾 حفظ</button>
+          <div class="ck-status" id="pw-status" style="margin-top:10px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ CONFIG ══ -->
+    <div id="page-config" class="page hidden">
+      <div class="page-header">
+        <div><div class="page-title"><span>🔧</span> الإعدادات</div><div class="page-desc">إعدادات البوت الأساسية</div></div>
+      </div>
+      <div class="page-content">
+        <div class="panel">
+          <div class="panel-title"><span class="pt-icon">🤖</span> إعدادات البوت</div>
+          <div class="form-grid">
+            <div class="form-row"><label>اسم البوت</label><input id="cfg-name" placeholder="jarfis"/></div>
+            <div class="form-row"><label>البادئة Prefix</label><input id="cfg-prefix" placeholder="/"/></div>
+            <div class="form-row"><label>Owner ID</label><input id="cfg-owner" placeholder="100xxxxxxxxxx"/></div>
+            <div class="form-row"><label>التوقيت الزمني</label><input id="cfg-tz" placeholder="Africa/Algiers"/></div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="saveConfig()">💾 حفظ الإعدادات</button>
+          <div class="ck-status" id="cfg-status" style="margin-top:10px"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-title"><span class="pt-icon">⚠️</span> إعادة التشغيل</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+            <div style="font-size:.76rem;color:var(--muted)">إعادة تشغيل البوت بالكامل وتطبيق التغييرات</div>
+            <button class="btn btn-danger btn-sm" onclick="restartBot()">🔄 إعادة التشغيل</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div><!-- /main -->
 </div><!-- /app -->
 
-<!-- ════ MODAL ════ -->
-<div id="modal-bg">
-  <div class="modal">
-    <div class="modal-head">
-      <span class="modal-title" id="modal-title">تعديل أمر</span>
-      <button class="modal-close" onclick="closeModal()">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="fr" id="modal-name-row" style="display:none">
-        <label>اسم الأمر (بالإنجليزية)</label>
-        <input type="text" id="modal-cmd-name" placeholder="mycommand"/>
-      </div>
-      <div class="fr">
-        <label>كود JavaScript للأمر</label>
-        <textarea id="modal-editor" spellcheck="false"></textarea>
-      </div>
-      <div class="fb" id="modal-fb"></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal()">إلغاء</button>
-      <button class="btn btn-s" id="modal-save-btn" onclick="saveCmd()">💾 حفظ</button>
-    </div>
-  </div>
-</div>
-
-<!-- ════ TOAST ════ -->
-<div id="toast-box"></div>
+<div id="toast-wrap"></div>
 
 <script>
-// ── Constants ───────────────────────────────────────────────────────────────
-const pageTitles = {
-  home:"🏠 الرئيسية", console:"📡 الكونسل المباشر",
-  cookies:"🍪 الكوكيز", send:"📤 إرسال رسالة",
-  commands:"⌨️ الأوامر", config:"⚙️ الإعدادات", admins:"👑 الأدمنز"
+/* ══ STATE ══ */
+let _currentPage = 'dashboard';
+let _allCmds = [];
+let _socket = null;
+
+/* ══ UTILS ══ */
+const $ = id => document.getElementById(id);
+const toast = (msg, type='info') => {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  $('toast-wrap').appendChild(el);
+  setTimeout(() => { el.style.opacity='0'; el.style.transition='opacity .4s'; setTimeout(()=>el.remove(),400); }, 3000);
 };
-
-// ── State ───────────────────────────────────────────────────────────────────
-let prefix = "/";
-let allCmds = [];
-let consoleRows = [];
-let consoleFilter = "all";
-let modalMode = "edit"; // 'edit' | 'add'
-let editingCmd = null;
-let botOnline = false;
-
-// ── Auth ────────────────────────────────────────────────────────────────────
-async function doLogin() {
-  const pw = document.getElementById("login-pw").value;
-  const err = document.getElementById("login-err");
-  err.textContent = "";
-  if (!pw) { err.textContent = "أدخل كلمة المرور"; return; }
-  try {
-    const r = await fetch("/api/login", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ password: pw }) });
-    const d = await r.json();
-    if (d.success) {
-      document.getElementById("login-screen").classList.add("hidden");
-      document.getElementById("app").classList.remove("hidden");
-      initApp();
-    } else {
-      err.textContent = d.error || "خطأ في تسجيل الدخول";
-    }
-  } catch { err.textContent = "خطأ في الاتصال بالسيرفر"; }
+const fmtUptime = s => {
+  s = Math.floor(s);
+  const d = Math.floor(s/86400), h = Math.floor((s%86400)/3600), m = Math.floor((s%3600)/60), ss = s%60;
+  if (d>0) return `${d}ي ${h}س`;
+  if (h>0) return `${h}س ${m}د`;
+  if (m>0) return `${m}د ${ss}ث`;
+  return `${ss}ث`;
+};
+const api = async (url, opts={}) => {
+  const r = await fetch(url, { headers: {'Content-Type':'application/json'}, ...opts });
+  const j = await r.json().catch(()=>({error:'Invalid JSON'}));
+  return { ok: r.ok, status: r.status, data: j };
+};
+function showStatus(id, msg, type) {
+  const el = $(id);
+  if (!el) return;
+  el.className = `ck-status show ${type}`;
+  el.innerHTML = `<span>${type==='ok'?'✅':type==='err'?'❌':type==='warn'?'⚠️':'ℹ️'}</span><span>${msg}</span>`;
 }
+function hideStatus(id) { const el=$(id); if(el){el.classList.remove('show');el.className='ck-status';} }
 
-async function doLogout() {
-  await fetch("/api/logout", { method:"POST" });
-  document.getElementById("app").classList.add("hidden");
-  document.getElementById("login-screen").classList.remove("hidden");
-  document.getElementById("login-pw").value = "";
-}
+/* ══ AUTH ══ */
+const doLogin = async () => {
+  const pw = $('login-pw').value.trim();
+  if (!pw) return $('login-err').textContent = 'أدخل كلمة المرور';
+  $('login-err').textContent = '';
+  const btn = document.querySelector('.lc-btn');
+  btn.textContent = '…'; btn.disabled = true;
+  const r = await api('/api/login', { method:'POST', body:JSON.stringify({password:pw}) });
+  btn.textContent = 'دخول'; btn.disabled = false;
+  if (r.ok) { $('login-screen').classList.add('hidden'); $('app').classList.remove('hidden'); onReady(); }
+  else $('login-err').textContent = r.data.error || 'خطأ';
+};
+const doLogout = async () => {
+  await api('/api/logout', {method:'POST'});
+  location.reload();
+};
+$('login-pw').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
 
-// ── Navigation ──────────────────────────────────────────────────────────────
-function goto(id) {
-  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-  document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
-  document.getElementById("page-"+id).classList.add("active");
-  const ni = document.getElementById("nav-"+id);
-  if (ni) ni.classList.add("active");
-  document.getElementById("hdr-page").textContent = pageTitles[id] || id;
-  closeSidebar();
-  if (id === "commands") loadCmds();
-  if (id === "config") loadConfig();
-  if (id === "admins") loadAdmins();
-}
-
-// ── Mobile sidebar ──────────────────────────────────────────────────────────
-function toggleSidebar() {
-  document.getElementById("sidebar").classList.toggle("open");
-  document.getElementById("overlay").classList.toggle("show");
-}
-function closeSidebar() {
-  document.getElementById("sidebar").classList.remove("open");
-  document.getElementById("overlay").classList.remove("show");
-}
-
-// ── Socket.IO ───────────────────────────────────────────────────────────────
-let socket;
+/* ══ SOCKET ══ */
 function initSocket() {
-  socket = io({ transports: ["polling","websocket"] });
-
-  socket.on("bot-status", d => {
-    const dot = document.getElementById("sb-dot");
-    const msg = document.getElementById("sb-msg");
-    dot.className = "";
-    botOnline = d.status === "online";
-    if (d.status === "online") {
-      dot.classList.add("online");
-      msg.textContent = "متصل ✔";
-      document.getElementById("alert-msess").style.display = "none";
-      document.getElementById("send-offline").style.display = "none";
-    } else if (d.status === "error") {
-      dot.classList.add("error");
-      msg.textContent = d.message && d.message.length < 55 ? d.message : "خطأ";
-      if (d.message && d.message.includes("m_sess")) document.getElementById("alert-msess").style.display = "block";
-    } else {
-      dot.classList.add("offline");
-      msg.textContent = "غير متصل";
-      document.getElementById("send-offline").style.display = "block";
-    }
-    clog("sys","[SYS]","tag-sys","البوت: "+(d.message||d.status));
-  });
-
-  socket.on("message", d => {
-    const body = d.body ? String(d.body).substring(0,90) : "";
-    clog("msg","[MSG]","tag-msg",`${d.senderID} → ${body||"(فارغ)"}`);
-    homeLog("💬",`${d.senderID}: ${body}`,"var(--accent2)");
-  });
-
-  socket.on("cookies-updated", d => {
-    setCkStatus(d.hasMsess, d.count, d.uid);
-    clog("sys","[CK]","tag-ok",`كوكيز محدَّثة: ${d.count} — m_sess: ${d.hasMsess?"✔":"✘"}`);
-  });
-
-  socket.on("event", d => {
-    clog("evt","[EVT]","tag-evt","حدث: "+d.type);
-    homeLog("📌",d.type,"var(--green)");
-  });
-
-  socket.on("group-event", d => {
-    clog("evt","[GRP]","tag-evt","جماعي: "+(d.logMessageType||""));
-    homeLog("👥",d.logMessageType||"group_event","var(--green)");
-  });
-
-  socket.on("typing", d => {
-    if (d.isTyping) clog("evt","[TYP]","tag-evt",`${d.from} يكتب…`);
-  });
-
-  socket.on("reaction", d => {
-    clog("evt","[REA]","tag-evt","تفاعل: "+d.reaction);
+  _socket = io({ transports: ['polling','websocket'] });
+  _socket.on('bot-status', d => updateStatus(d));
+  _socket.on('message', d => addLog(d));
+  _socket.on('cookies-updated', d => {
+    loadCookieStatus();
+    toast(`كوكيز محدّثة — ${d.count} كوكي`, 'ok');
   });
 }
-
-// ── Console ─────────────────────────────────────────────────────────────────
-function clog(type, tag, tagCls, body) {
-  const ts = new Date().toLocaleTimeString("en",{hour12:false,hour:"2-digit",minute:"2-digit",second:"2-digit"});
-  consoleRows.unshift({ type, html:`<span class="c-ts">${ts}</span><span class="c-tag ${tagCls}">${esc(tag)}</span><span class="c-body">${esc(body)}</span>` });
-  if (consoleRows.length > 400) consoleRows.pop();
-  renderConsole();
-}
-function renderConsole() {
-  const box = document.getElementById("console-box");
-  const rows = consoleFilter === "all" ? consoleRows : consoleRows.filter(r => r.type === consoleFilter);
-  box.innerHTML = rows.slice(0,200).map(r => `<div class="c-row">${r.html}</div>`).join("") ||
-    `<div class="c-row"><span class="c-body" style="color:var(--muted)">لا يوجد محتوى</span></div>`;
-}
-function filterConsole(f, el) {
-  consoleFilter = f;
-  document.querySelectorAll(".ctag-btn").forEach(b => b.classList.remove("active"));
-  el.classList.add("active");
-  renderConsole();
-}
-function clearConsole() { consoleRows = []; renderConsole(); }
-
-// ── Home log ─────────────────────────────────────────────────────────────────
-function homeLog(icon, text, color) {
-  const box = document.getElementById("home-log");
-  const first = box.children[0];
-  if (first && first.style.color === "var(--muted)") box.innerHTML = "";
-  const ts = new Date().toLocaleTimeString("en",{hour12:false});
-  const row = document.createElement("div");
-  row.className = "c-row";
-  row.innerHTML = `<span class="c-ts">${ts}</span><span>${icon}</span><span class="c-body" style="color:${color}">${esc(String(text).substring(0,80))}</span>`;
-  box.insertBefore(row, box.firstChild);
-  if (box.children.length > 40) box.removeChild(box.lastChild);
+function updateStatus(d) {
+  const dot = $('sb-dot'), msg = $('sb-msg');
+  dot.className = '';
+  if (d.status === 'online') { dot.classList.add('online'); }
+  else if (d.status === 'error' || d.status === 'degraded') { dot.classList.add('error'); }
+  else { dot.classList.add('offline'); }
+  msg.textContent = d.message || d.status;
 }
 
-// ── Stats ────────────────────────────────────────────────────────────────────
+/* ══ NAV ══ */
+function goto(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const el = $('page-'+page);
+  if (el) { el.classList.remove('hidden'); _currentPage = page; }
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.textContent.trim().replace(/\s+/g,' ').includes(
+      {dashboard:'لوحة',cookies:'الكوكيز',protection:'الحماية',commands:'الأوامر',send:'إرسال',log:'سجل',admins:'الأدمنز',config:'الإعدادات'}[page] || '§'
+    )) n.classList.add('active');
+  });
+  closeSidebar();
+  if (page==='dashboard') loadStats();
+  if (page==='cookies') loadCookieStatus();
+  if (page==='protection') loadProtection();
+  if (page==='commands') loadCommands();
+  if (page==='admins') loadAdmins();
+  if (page==='config') loadConfig();
+}
+
+/* ══ SIDEBAR MOBILE ══ */
+function toggleSidebar() { $('sidebar').classList.toggle('open'); $('overlay').classList.toggle('show'); }
+function closeSidebar() { $('sidebar').classList.remove('open'); $('overlay').classList.remove('show'); }
+
+/* ══ STATS ══ */
 async function loadStats() {
-  try {
-    const d = await api("/api/stats");
-    if (!d) return;
-    setText("s-users",   d.totalUsers  ?? "—");
-    setText("s-threads", d.totalThreads ?? "—");
-    setText("s-runs",    d.totalCommands ?? "—");
-    setText("s-loaded",  d.commands ?? "—");
-    setText("s-admins",  (d.adminCount||0)+1);
-    setText("sb-owner",  d.ownerID || "—");
-    setText("sb-admins-count", (d.adminCount||0)+1);
-    setText("hdr-uid",   "UID: "+(d.ownerID||"—"));
-    setText("foot-botname", d.botName || "jarfis");
-    prefix = d.prefix || "/";
-    if (d.uptime != null) {
-      const h = Math.floor(d.uptime/3600), m = Math.floor((d.uptime%3600)/60), s = Math.floor(d.uptime%60);
-      setText("s-uptime", `${h}h ${m}m`);
-    }
-  } catch (_) {}
+  const r = await api('/api/stats');
+  if (!r.ok) return;
+  const d = r.data;
+  $('st-users').textContent = d.totalUsers ?? '—';
+  $('st-threads').textContent = d.totalThreads ?? '—';
+  $('st-cmds').textContent = d.totalCommands ?? '—';
+  $('st-uptime').textContent = fmtUptime(d.uptime || 0);
+  $('inf-name').textContent = d.botName || 'jarfis';
+  $('inf-prefix').textContent = d.prefix || '/';
+  $('inf-cmdcount').textContent = d.commands || '—';
+  $('inf-admins').textContent = d.adminCount ?? '—';
+  $('inf-ram').textContent = (d.memMB || '—') + ' MB';
+  $('inf-node').textContent = d.nodeVersion || '—';
+  $('sb-ram').textContent = d.memMB || '—';
+  $('sb-node').textContent = d.nodeVersion || '—';
+  if (d.uid) $('sb-uid').textContent = d.uid;
+  // Quick protection toggles
+  if (d.online) updateStatus({status:'online', message:`متصل ✔ (${d.uid || '?'})`});
+  loadProtection();
 }
 
-// ── Cookie status ─────────────────────────────────────────────────────────────
-function setCkStatus(hasMsess, count, uid) {
-  const els = ["ck-dot","home-ck-dot"];
-  const lbls = ["ck-label","home-ck-label"];
-  const infoBox = document.getElementById("ck-info-box");
-
-  els.forEach(id => {
-    const dot = document.getElementById(id);
-    if (!dot) return;
-    if (hasMsess) dot.className = "ck-dot ok";
-    else if (count > 0) dot.className = "ck-dot warn";
-    else dot.className = "ck-dot none";
-  });
-
-  let txt = count > 0
-    ? (hasMsess ? `✔ ${count} كوكي — m_sess موجود — MQTT يعمل` : `⚠ ${count} كوكي — m_sess غائب (MQTT سيُرفض)`)
-    : "لا توجد كوكيز محمَّلة";
-  if (uid) txt += ` — UID: ${uid}`;
-
-  lbls.forEach(id => { const el = document.getElementById(id); if (el) el.textContent = txt; });
-
-  if (infoBox) {
-    if (count > 0) {
-      const cls = hasMsess ? "alert-info" : "alert-warn";
-      infoBox.className = `alert ${cls}`;
-      infoBox.innerHTML = `<b>${hasMsess ? "✅" : "⚠️"} ${txt}</b>`;
-      infoBox.style.display = "block";
-    } else {
-      infoBox.style.display = "none";
-    }
-    const msessAlert = document.getElementById("alert-msess");
-    if (msessAlert) msessAlert.style.display = (!hasMsess && count > 0) ? "block" : "none";
+/* ══ COOKIE STATUS ══ */
+async function loadCookieStatus() {
+  const r = await api('/api/cookies');
+  const d = r.data;
+  const el = $('ck-current');
+  if (!d.exists || !d.count) {
+    el.innerHTML = `<div style="font-size:.78rem;color:var(--red)">❌ لا توجد كوكيز محفوظة</div>`;
+  } else {
+    el.innerHTML = `
+      <div style="display:flex;flex-wrap:wrap;gap:10px">
+        <div class="stat-card" style="padding:10px 14px"><div class="ico" style="background:#22c55e20;color:var(--green);width:32px;height:32px;font-size:.9rem">✅</div><div class="data"><div class="val" style="font-size:1rem">${d.count}</div><div class="lbl">كوكي محفوظ</div></div></div>
+        <div class="stat-card" style="padding:10px 14px"><div class="ico" style="background:${d.uid?'#7c6cfc20':'#ef444420'};color:${d.uid?'var(--accent)':'var(--red)'};width:32px;height:32px;font-size:.9rem">${d.uid?'👤':'❓'}</div><div class="data"><div class="val" style="font-size:.85rem">${d.uid || 'غير معروف'}</div><div class="lbl">c_user</div></div></div>
+        <div class="stat-card" style="padding:10px 14px"><div class="ico" style="background:${d.hasMsess?'#22c55e20':'#eab30820'};color:${d.hasMsess?'var(--green)':'var(--yellow)'};width:32px;height:32px;font-size:.9rem">${d.hasMsess?'📡':'⚠️'}</div><div class="data"><div class="val" style="font-size:.85rem">${d.hasMsess?'متوفر':'غير متوفر'}</div><div class="lbl">m_sess</div></div></div>
+      </div>
+      ${!d.hasMsess?`<div class="ck-status show warn" style="font-size:.7rem;margin-top:8px"><span>⚠️</span><span>m_sess غير موجود — البوت سيستخدم HTTP polling بدل MQTT. للحصول على MQTT الفوري، استخرج كوكيز من messenger.com أيضاً</span></div>`:''}
+    `;
   }
 }
 
-async function checkCookies() {
-  try {
-    const d = await api("/api/cookies");
-    if (d && d.exists) setCkStatus(d.hasMsess, d.count, d.uid);
-    else setCkStatus(false, 0, "");
-  } catch (_) {}
+/* ══ COOKIE TABS ══ */
+function setCkTab(tab, btn) {
+  document.querySelectorAll('.cookie-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.cookie-pane').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  $('ck-pane-'+tab).classList.add('active');
+  hideStatus('ck-status');
 }
 
-// ── Cookie actions ────────────────────────────────────────────────────────────
-function validateCookies() {
-  const raw = document.getElementById("ck-input").value.trim();
-  const fb  = document.getElementById("ck-fb");
-  if (!raw) { fb.className="fb err"; fb.textContent="❌ الحقل فارغ"; return; }
-  try {
-    const a = JSON.parse(raw);
-    if (!Array.isArray(a)) { fb.className="fb err"; fb.textContent="❌ يجب أن يكون JSON مصفوفة []"; return; }
-    const hasMsess  = a.some(c => (c.key||c.name) === "m_sess");
-    const hasUser   = a.some(c => (c.key||c.name) === "c_user");
-    const hasXS     = a.some(c => (c.key||c.name) === "xs");
-    const fmt = a[0]?.key ? "c3c/fca" : a[0]?.name ? "Cookie-Editor" : "غير معروف";
-    const uid = a.find(c => (c.key||c.name) === "c_user");
-    let msg = `✔ صالح — ${a.length} كوكي — صيغة: ${fmt}\n`;
-    msg += `c_user: ${hasUser?"✔":"✘"}  xs: ${hasXS?"✔":"✘"}  m_sess: ${hasMsess?"✔":"✘"}`;
-    if (uid) msg += `  UID: ${uid.value||uid.name}`;
-    fb.className = (hasUser && hasXS) ? "fb ok" : "fb warn";
-    fb.textContent = msg;
-  } catch (e) { fb.className="fb err"; fb.textContent="❌ JSON غير صالح: "+e.message; }
+function clearInput(id) { $(id).value = ''; hideStatus('ck-status'); }
+
+function getInput(type) {
+  if (type==='json') return $('ck-json-input').value.trim();
+  if (type==='string') return $('ck-str-input').value.trim();
+  if (type==='token') return $('ck-tok-input').value.trim();
 }
 
-async function saveCookies() {
-  const raw = document.getElementById("ck-input").value.trim();
-  const fb  = document.getElementById("ck-fb");
-  if (!raw) { fb.className="fb err"; fb.textContent="❌ الحقل فارغ"; return; }
-  let parsed;
-  try { parsed = JSON.parse(raw); }
-  catch (e) { fb.className="fb err"; fb.textContent="❌ JSON غير صالح: "+e.message; return; }
-  fb.className="fb"; fb.textContent="⏳ جاري الحفظ…";
-  try {
-    const r = await fetch("/api/cookies", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({cookies:parsed}) });
-    const d = await r.json();
-    if (d.success) {
-      fb.className = "fb ok";
-      fb.textContent = `✅ تم حفظ ${d.count} كوكي. m_sess: ${d.hasMsess?"✔ موجود":"✘ غائب — صدّر من messenger.com"}${d.uid?" | UID: "+d.uid:""}`;
-      setCkStatus(d.hasMsess, d.count, d.uid);
-      document.getElementById("ck-input").value = "";
-      toast("✅ تم حفظ الكوكيز بنجاح — أعد تشغيل البوت", "ok");
-    } else {
-      fb.className="fb err"; fb.textContent="❌ "+d.error;
-      toast("❌ "+d.error, "err");
-    }
-  } catch { fb.className="fb err"; fb.textContent="❌ خطأ في الشبكة"; }
+async function submitCookies(type) {
+  const raw = getInput(type);
+  if (!raw) return showStatus('ck-status', 'أدخل الكوكيز أولاً', 'err');
+
+  const spinId = `ck-${type==='json'?'json':type==='string'?'str':'tok'}-spin`;
+  const spinEl = $(spinId);
+  if (spinEl) spinEl.style.display = 'inline-block';
+  showStatus('ck-status', 'جارٍ التحقق والحفظ…', 'info');
+
+  const r = await api('/api/cookies', { method:'POST', body: JSON.stringify({ cookies: raw }) });
+  if (spinEl) spinEl.style.display = 'none';
+
+  if (r.ok) {
+    const d = r.data;
+    let msg = `✅ تم الحفظ — ${d.count} كوكي`;
+    if (d.uid) msg += ` · UID: ${d.uid}`;
+    if (d.hasMsess) msg += ' · m_sess ✔';
+    else msg += ' · m_sess ✘ (سيستخدم HTTP polling)';
+    if (d.valid === false) msg += '\n⚠️ تحذير: mbasic لم يتعرف على الكوكيز — قد تكون منتهية';
+    showStatus('ck-status', msg, d.valid===false ? 'warn' : 'ok');
+    loadCookieStatus();
+    toast('تم حفظ الكوكيز بنجاح', 'ok');
+  } else {
+    showStatus('ck-status', r.data.error || 'فشل الحفظ', 'err');
+  }
+}
+
+async function validateOnly(type) {
+  const raw = getInput(type);
+  if (!raw) return showStatus('ck-status', 'أدخل الكوكيز أولاً', 'err');
+  showStatus('ck-status', 'جارٍ التحقق من صحة الكوكيز…', 'info');
+  const r = await api('/api/cookies/validate', { method:'POST', body: JSON.stringify({ cookies: raw }) });
+  if (r.ok) {
+    const d = r.data;
+    showStatus('ck-status', d.message || (d.valid?'صالحة':'غير صالحة'), d.valid?'ok':d.valid===null?'info':'err');
+  } else {
+    showStatus('ck-status', r.data.message || r.data.error || 'خطأ', 'err');
+  }
 }
 
 async function deleteCookies() {
-  if (!confirm("هل تريد حذف الكوكيز؟ سيتوقف البوت عن العمل.")) return;
-  try {
-    const d = await api("/api/cookies", "DELETE");
-    if (d?.success) { toast("🗑 تم حذف الكوكيز","warn"); checkCookies(); }
-  } catch { toast("❌ فشل الحذف","err"); }
+  if (!confirm('هل أنت متأكد من حذف الكوكيز؟ سيُوقف البوت.')) return;
+  const r = await api('/api/cookies', { method:'DELETE' });
+  if (r.ok) { toast('تم حذف الكوكيز', 'ok'); loadCookieStatus(); }
+  else toast(r.data.error || 'خطأ', 'err');
 }
 
-// ── Send message ──────────────────────────────────────────────────────────────
-async function sendMsg() {
-  const threadID = document.getElementById("s-thread").value.trim();
-  const message  = document.getElementById("s-body").value.trim();
-  const fb = document.getElementById("s-fb");
-  if (!threadID || !message) { fb.className="fb err"; fb.textContent="❌ أدخل Thread ID والرسالة"; return; }
-  fb.className="fb"; fb.textContent="⏳ جاري الإرسال…";
-  try {
-    const r = await fetch("/api/send", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({threadID,message}) });
-    const d = await r.json();
-    if (d.success) {
-      fb.className="fb ok"; fb.textContent="✅ تم الإرسال!";
-      document.getElementById("s-body").value = "";
-      clog("sys","[SEND]","tag-ok",`أُرسلت إلى ${threadID}`);
-      toast("✅ تم إرسال الرسالة","ok");
-    } else { fb.className="fb err"; fb.textContent="❌ "+d.error; }
-  } catch { fb.className="fb err"; fb.textContent="❌ خطأ في الشبكة"; }
-}
-
-// ── Commands ──────────────────────────────────────────────────────────────────
-async function loadCmds() {
-  try {
-    allCmds = await api("/api/commands") || [];
-    renderCmds(allCmds);
-  } catch (_) {}
-}
-
-function renderCmds(list) {
-  const g = document.getElementById("cmd-grid");
-  if (!list.length) { g.innerHTML=`<div style="color:var(--muted)">لا توجد أوامر</div>`; return; }
-  g.innerHTML = list.map(c => {
-    const ob = c.ownerOnly ? `<span class="badge b-owner">مالك</span>` : "";
-    const ab = c.adminOnly&&!c.ownerOnly ? `<span class="badge b-admin">أدمن</span>` : "";
-    const pb = !c.adminOnly&&!c.ownerOnly ? `<span class="badge b-pub">عام</span>` : "";
-    return `<div class="cmd-card">
-      <div class="cmd-head">
-        <div class="cmd-name">${prefix}${esc(c.name)} ${ob}${ab}${pb}</div>
-        <div class="cmd-actions">
-          <button class="btn btn-ghost btn-sm" title="تعديل" onclick="editCmd('${esc(c.name)}')">✏️</button>
-          <button class="btn btn-d btn-sm" title="حذف" onclick="deleteCmd('${esc(c.name)}')">🗑</button>
-        </div>
-      </div>
-      <div class="cmd-desc">${esc(c.description||"—")}</div>
-      <div class="cmd-usage">${prefix}${esc(c.usage||c.name)}</div>
-      ${c.aliases&&c.aliases.length?`<div class="cmd-usage" style="color:var(--muted);font-size:.68rem">↩ ${esc(c.aliases.join(", "))}</div>`:""}
-    </div>`;
-  }).join("");
-}
-
-function filterCmds() {
-  const q = document.getElementById("cmd-q").value.toLowerCase();
-  renderCmds(q ? allCmds.filter(c => c.name.includes(q)||(c.description||"").toLowerCase().includes(q)) : allCmds);
-}
-
-async function editCmd(name) {
-  try {
-    const d = await api(`/api/commands/${name}/source`);
-    if (!d || d.error) { toast("❌ تعذّر تحميل الأمر","err"); return; }
-    modalMode = "edit";
-    editingCmd = name;
-    document.getElementById("modal-title").textContent = `✏️ تعديل أمر: ${prefix}${name}`;
-    document.getElementById("modal-name-row").style.display = "none";
-    document.getElementById("modal-editor").value = d.source;
-    document.getElementById("modal-fb").textContent = "";
-    document.getElementById("modal-bg").classList.add("show");
-  } catch { toast("❌ خطأ في تحميل الأمر","err"); }
-}
-
-function openAddCmd() {
-  modalMode = "add";
-  editingCmd = null;
-  document.getElementById("modal-title").textContent = "➕ إضافة أمر جديد";
-  document.getElementById("modal-name-row").style.display = "block";
-  document.getElementById("modal-cmd-name").value = "";
-  document.getElementById("modal-editor").value = `module.exports = {
-  config: {
-    name: "mycommand",
-    aliases: [],
-    description: "وصف الأمر",
-    usage: "mycommand",
-    adminOnly: false,
-    ownerOnly: false,
-  },
-  async run({ api, event, args, threadID, senderID, isGroup }) {
-    api.sendMessage("مرحباً! 👋", threadID);
-  },
-};`;
-  document.getElementById("modal-fb").textContent = "";
-  document.getElementById("modal-bg").classList.add("show");
-}
-
-async function saveCmd() {
-  const editor = document.getElementById("modal-editor");
-  const fb = document.getElementById("modal-fb");
-  const source = editor.value.trim();
-  if (!source) { fb.className="fb err"; fb.textContent="❌ الكود فارغ"; return; }
-  fb.className="fb"; fb.textContent="⏳ جاري الحفظ…";
-
-  try {
-    let r, d;
-    if (modalMode === "add") {
-      const name = document.getElementById("modal-cmd-name").value.trim();
-      if (!name) { fb.className="fb err"; fb.textContent="❌ أدخل اسم الأمر"; return; }
-      r = await fetch("/api/commands", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({name,source}) });
-    } else {
-      r = await fetch(`/api/commands/${editingCmd}`, { method:"PUT", headers:{"Content-Type":"application/json"}, body:JSON.stringify({source}) });
-    }
-    d = await r.json();
-    if (d.success) {
-      fb.className="fb ok"; fb.textContent="✅ تم الحفظ بنجاح";
-      toast("✅ تم حفظ الأمر","ok");
-      await loadCmds();
-      setTimeout(closeModal, 1200);
-    } else { fb.className="fb err"; fb.textContent="❌ "+d.error; }
-  } catch { fb.className="fb err"; fb.textContent="❌ خطأ في الشبكة"; }
-}
-
-async function deleteCmd(name) {
-  if (!confirm(`هل تريد حذف الأمر "${prefix}${name}"؟ لا يمكن التراجع.`)) return;
-  try {
-    const d = await api(`/api/commands/${name}`, "DELETE");
-    if (d?.success) { toast(`🗑 تم حذف الأمر ${prefix}${name}`,"warn"); await loadCmds(); }
-    else toast("❌ "+(d?.error||"فشل الحذف"),"err");
-  } catch { toast("❌ خطأ في الشبكة","err"); }
-}
-
-function closeModal() { document.getElementById("modal-bg").classList.remove("show"); }
-document.getElementById("modal-bg").addEventListener("click", e => { if (e.target === document.getElementById("modal-bg")) closeModal(); });
-
-// ── Config ────────────────────────────────────────────────────────────────────
-async function loadConfig() {
-  try {
-    const d = await api("/api/config");
-    if (!d) return;
-    setVal("cfg-name",   d.botName || "jarfis");
-    setVal("cfg-prefix", d.prefix  || "/");
-    setVal("cfg-owner",  d.ownerID || "");
-    setVal("cfg-ua",     d.userAgent || "");
-    const tz = document.getElementById("cfg-tz");
-    if (tz) tz.value = d.timezone || "Africa/Algiers";
-  } catch (_) {}
-}
-
-async function saveConfig() {
-  const fb = document.getElementById("cfg-fb");
-  const body = {
-    botName:   document.getElementById("cfg-name").value.trim(),
-    prefix:    document.getElementById("cfg-prefix").value.trim() || "/",
-    ownerID:   document.getElementById("cfg-owner").value.trim(),
-    timezone:  document.getElementById("cfg-tz").value,
-    userAgent: document.getElementById("cfg-ua").value.trim(),
+/* ══ PROTECTION ══ */
+async function loadProtection() {
+  const r = await api('/api/protection');
+  if (!r.ok) return;
+  const d = r.data;
+  // Main page toggles
+  const map = {
+    'p-typing': d.humanTyping?.enabled,
+    'p-stealth': d.stealth?.enabled,
+    'p-throttle': d.throttle?.enabled,
+    'p-mqtt': d.mqttHealth?.enabled,
+    'p-keepalive': d.keepAlive?.enabled,
+    // Quick panel
+    'qt-typing': d.humanTyping?.enabled,
+    'qt-stealth': d.stealth?.enabled,
+    'qt-mqtt': d.mqttHealth?.enabled,
+    'qt-keepalive': d.keepAlive?.enabled,
   };
-  fb.className="fb"; fb.textContent="⏳ جاري الحفظ…";
-  try {
-    const d = await api("/api/config","POST",body);
-    if (d?.success) {
-      fb.className="fb ok"; fb.textContent="✅ تم حفظ الإعدادات";
-      toast("✅ تم حفظ الإعدادات","ok");
-      await loadStats();
-    } else { fb.className="fb err"; fb.textContent="❌ "+(d?.error||"فشل"); }
-  } catch { fb.className="fb err"; fb.textContent="❌ خطأ في الشبكة"; }
+  for (const [id, val] of Object.entries(map)) { const el=$(id); if(el) el.checked = !!val; }
+
+  // Stats
+  const ps = $('prot-stats');
+  if (ps && d.throttle) {
+    ps.innerHTML = `
+      <div class="stat-card" style="padding:10px 12px"><div class="data"><div class="val" style="font-size:1rem">${d.throttle.trackedThreads??0}</div><div class="lbl">محادثة مُراقبة</div></div></div>
+      <div class="stat-card" style="padding:10px 12px"><div class="data"><div class="val" style="font-size:1rem">${d.throttle.globalQueueSize??0}</div><div class="lbl">رسائل الآن</div></div></div>
+      <div class="stat-card" style="padding:10px 12px"><div class="data"><div class="val" style="font-size:1rem;color:${d.throttle.burstCoolingActive?'var(--red)':'var(--green)'}">${d.throttle.burstCoolingActive?'نشط':'هادئ'}</div><div class="lbl">Burst Cooling</div></div></div>
+      <div class="stat-card" style="padding:10px 12px"><div class="data"><div class="val" style="font-size:1rem;color:${d.stealth?.isSleepHour?'var(--blue)':'var(--green)'}">${d.stealth?.isSleepHour?'نوم 🌙':'نشط 🟢'}</div><div class="lbl">وضع التخفي</div></div></div>
+    `;
+  }
 }
 
-async function changePassword() {
-  const cur = document.getElementById("pw-cur").value;
-  const nw  = document.getElementById("pw-new").value;
-  const fb  = document.getElementById("pw-fb");
-  if (!cur || !nw) { fb.className="fb err"; fb.textContent="❌ أدخل كلمتي المرور"; return; }
-  if (nw.length < 6) { fb.className="fb err"; fb.textContent="❌ كلمة المرور يجب أن تكون 6 أحرف على الأقل"; return; }
-  fb.className="fb"; fb.textContent="⏳ جاري التغيير…";
-  try {
-    const r = await fetch("/api/config/password", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({current:cur,newPassword:nw}) });
-    const d = await r.json();
-    if (d.success) {
-      fb.className="fb ok"; fb.textContent="✅ تم تغيير كلمة المرور";
-      document.getElementById("pw-cur").value = "";
-      document.getElementById("pw-new").value = "";
-      toast("✅ تم تغيير كلمة المرور","ok");
-    } else { fb.className="fb err"; fb.textContent="❌ "+d.error; }
-  } catch { fb.className="fb err"; fb.textContent="❌ خطأ في الشبكة"; }
+async function toggleProt(system, enable) {
+  const r = await api('/api/protection/toggle', { method:'POST', body: JSON.stringify({system, enable}) });
+  if (r.ok) toast(`${enable?'تفعيل':'إيقاف'} ${system}`, 'ok');
+  else toast(r.data.error || 'خطأ', 'err');
 }
 
-// ── Admins ────────────────────────────────────────────────────────────────────
-async function loadAdmins() {
-  try {
-    const d = await api("/api/admins");
-    if (!d) return;
-    setText("admins-owner", d.ownerID || "—");
-    renderAdmins(d.adminIDs || []);
-  } catch (_) {}
+/* ══ COMMANDS ══ */
+async function loadCommands() {
+  const r = await api('/api/commands');
+  if (!r.ok) return;
+  _allCmds = r.data;
+  renderCmds(_allCmds);
 }
-
-function renderAdmins(ids) {
-  const box = document.getElementById("admin-list");
-  if (!ids.length) { box.innerHTML = `<div style="color:var(--muted);font-size:.85rem">لا يوجد أدمنز بعد</div>`; return; }
-  box.innerHTML = ids.map(id => `
-    <div class="admin-row">
-      <div class="admin-uid">${esc(id)}</div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <span class="admin-badge">أدمن</span>
-        <button class="btn btn-d btn-sm" onclick="removeAdmin('${esc(id)}')">حذف</button>
+function renderCmds(list) {
+  const icons = ['⚡','🎯','🔮','🎲','💡','🔧','🎭','🌟','💬','🎪'];
+  const g = $('cmd-grid');
+  if (!list.length) { g.innerHTML='<div style="color:var(--muted);font-size:.78rem">لا توجد أوامر</div>'; return; }
+  g.innerHTML = list.map((c,i) => `
+    <div class="cmd-card" onclick="viewCmd('${c.name}')">
+      <div class="cc-ico">${icons[i%icons.length]}</div>
+      <div style="flex:1;min-width:0">
+        <div class="cc-name">${c.name}</div>
+        <div class="cc-desc">${c.description||'—'}</div>
+        ${c.adminOnly?`<span class="badge badge-admin">أدمن</span>`:''}
+        ${c.ownerOnly?`<span class="badge badge-owner">مالك</span>`:''}
       </div>
-    </div>`).join("");
+    </div>
+  `).join('');
+}
+function filterCmds(q) {
+  const f = _allCmds.filter(c => c.name.includes(q)||c.description.includes(q));
+  renderCmds(f);
+}
+async function viewCmd(name) {
+  const r = await api(`/api/commands/${name}/source`);
+  if (!r.ok) return toast('تعذّر تحميل الكود', 'err');
+  const code = r.data.source;
+  if (!confirm(`معاينة كود "${name}"\n\n${code.slice(0,300)}…\n\nهل تريد حذف هذا الأمر؟`)) return;
+  const dr = await api(`/api/commands/${name}`, {method:'DELETE'});
+  if (dr.ok) { toast(`حُذف أمر ${name}`, 'ok'); loadCommands(); }
+  else toast(dr.data.error || 'خطأ', 'err');
+}
+function openAddCmd() { $('add-cmd-modal').classList.remove('hidden'); $('add-cmd-modal').style.display='flex'; }
+function closeAddCmd() { $('add-cmd-modal').classList.add('hidden'); }
+async function saveNewCmd() {
+  const name = $('new-cmd-name').value.trim();
+  const source = $('new-cmd-src').value.trim();
+  if (!name||!source) return toast('اسم وكود مطلوبان', 'err');
+  const r = await api('/api/commands', { method:'POST', body: JSON.stringify({name, source}) });
+  if (r.ok) { toast(`أُضيف أمر ${name}`, 'ok'); closeAddCmd(); loadCommands(); }
+  else toast(r.data.error || 'خطأ', 'err');
 }
 
+/* ══ SEND ══ */
+async function sendMsg() {
+  const threadID = $('send-tid').value.trim();
+  const message  = $('send-msg').value.trim();
+  if (!threadID||!message) return showStatus('send-status','معرّف المحادثة والرسالة مطلوبان','err');
+  const btn = $('send-btn'); btn.disabled=true; btn.textContent='…';
+  const r = await api('/api/send', {method:'POST', body:JSON.stringify({threadID, message})});
+  btn.disabled=false; btn.textContent='📤 إرسال';
+  if (r.ok) { showStatus('send-status','✅ أُرسلت بنجاح','ok'); $('send-msg').value=''; }
+  else showStatus('send-status', r.data.error||'خطأ', 'err');
+}
+
+/* ══ LOG ══ */
+const _logItems = [];
+function addLog(d) {
+  _logItems.unshift(d);
+  if (_logItems.length > 100) _logItems.length = 100;
+  const el = $('msg-log');
+  const time = new Date(d.timestamp).toLocaleTimeString('ar-DZ',{hour12:false});
+  const item = document.createElement('div');
+  item.className = 'log-item';
+  item.innerHTML = `
+    <div class="li-meta">
+      <span>${time}</span>
+      <span class="li-thread">${d.threadID||'?'}</span>
+      ${d.isGroup?'<span class="li-group">مجموعة</span>':''}
+      <span>من: ${d.senderID||'?'}</span>
+    </div>
+    <div class="li-body">${String(d.body||'').slice(0,200)}</div>
+  `;
+  const container = el.querySelector('div[style*="انتظار"]');
+  if (container) container.remove();
+  el.insertBefore(item, el.firstChild);
+}
+function clearLog() { $('msg-log').innerHTML = '<div style="color:var(--muted);font-size:.78rem;text-align:center;padding:20px">انتظار الرسائل…</div>'; _logItems.length=0; }
+
+/* ══ ADMINS ══ */
+async function loadAdmins() {
+  const r = await api('/api/admins');
+  if (!r.ok) return;
+  const d = r.data;
+  const el = $('admin-list');
+  const rows = [];
+  if (d.ownerID) rows.push(`<div class="admin-row"><span class="admin-uid">${d.ownerID}</span><span class="admin-badge owner">مالك</span></div>`);
+  for (const id of (d.adminIDs||[])) {
+    rows.push(`<div class="admin-row"><span class="admin-uid">${id}</span><span class="admin-badge">أدمن</span><button class="btn btn-danger btn-sm" onclick="removeAdmin('${id}')">🗑️</button></div>`);
+  }
+  el.innerHTML = rows.length ? rows.join('') : '<div style="color:var(--muted);font-size:.78rem">لا يوجد أدمنز</div>';
+}
 async function addAdmin() {
-  const uid = document.getElementById("admin-uid-input").value.trim();
-  const fb  = document.getElementById("admin-fb");
-  if (!uid) { fb.className="fb err"; fb.textContent="❌ أدخل UID"; return; }
-  fb.className="fb"; fb.textContent="⏳ جاري الإضافة…";
-  try {
-    const d = await api("/api/admins","POST",{uid});
-    if (d?.success) {
-      renderAdmins(d.adminIDs);
-      document.getElementById("admin-uid-input").value = "";
-      fb.className="fb ok"; fb.textContent="✅ تمت إضافة الأدمن";
-      toast("✅ تمت الإضافة","ok");
-    } else { fb.className="fb err"; fb.textContent="❌ "+(d?.error||"فشل"); }
-  } catch { fb.className="fb err"; fb.textContent="❌ خطأ في الشبكة"; }
+  const uid = $('new-admin-uid').value.trim();
+  if (!uid) return toast('أدخل UID', 'err');
+  const r = await api('/api/admins', {method:'POST',body:JSON.stringify({uid})});
+  if (r.ok) { toast('تم إضافة الأدمن', 'ok'); $('new-admin-uid').value=''; loadAdmins(); }
+  else toast(r.data.error||'خطأ', 'err');
 }
-
 async function removeAdmin(uid) {
-  if (!confirm(`حذف الأدمن ${uid}؟`)) return;
-  try {
-    const d = await api(`/api/admins/${uid}`,"DELETE");
-    if (d?.success) { renderAdmins(d.adminIDs); toast("🗑 تم حذف الأدمن","warn"); }
-    else toast("❌ "+(d?.error||"فشل"),"err");
-  } catch { toast("❌ خطأ","err"); }
+  if (!confirm(`حذف ${uid}؟`)) return;
+  const r = await api(`/api/admins/${uid}`, {method:'DELETE'});
+  if (r.ok) { toast('تم الحذف', 'ok'); loadAdmins(); }
+  else toast(r.data.error||'خطأ', 'err');
+}
+async function changePw() {
+  const cur = $('pw-cur').value, nw = $('pw-new').value;
+  if (!cur||!nw) return showStatus('pw-status','الحقول مطلوبة','err');
+  const r = await api('/api/config/password',{method:'POST',body:JSON.stringify({current:cur,newPassword:nw})});
+  if (r.ok) { showStatus('pw-status','✅ تم تغيير كلمة المرور','ok'); $('pw-cur').value=''; $('pw-new').value=''; }
+  else showStatus('pw-status', r.data.error||'خطأ', 'err');
 }
 
-// ── Restart ───────────────────────────────────────────────────────────────────
+/* ══ CONFIG ══ */
+async function loadConfig() {
+  const r = await api('/api/config');
+  if (!r.ok) return;
+  const d = r.data;
+  $('cfg-name').value = d.botName||'jarfis';
+  $('cfg-prefix').value = d.prefix||'/';
+  $('cfg-owner').value = d.ownerID||'';
+  $('cfg-tz').value = d.timezone||'Africa/Algiers';
+}
+async function saveConfig() {
+  const body = {
+    botName: $('cfg-name').value.trim(),
+    prefix:  $('cfg-prefix').value.trim() || '/',
+    ownerID: $('cfg-owner').value.trim(),
+    timezone: $('cfg-tz').value.trim(),
+  };
+  const r = await api('/api/config',{method:'POST',body:JSON.stringify(body)});
+  if (r.ok) { showStatus('cfg-status','✅ تم الحفظ','ok'); toast('تم حفظ الإعدادات','ok'); }
+  else showStatus('cfg-status', r.data.error||'خطأ', 'err');
+}
 async function restartBot() {
-  if (!confirm("إعادة تشغيل البوت؟ ستتوقف الخدمة مؤقتاً.")) return;
-  try {
-    await fetch("/api/restart", { method:"POST" });
-    toast("🔄 البوت يُعاد تشغيله…","warn");
-    setTimeout(() => { checkCookies(); loadStats(); }, 4000);
-  } catch { toast("❌ خطأ في إعادة التشغيل","err"); }
+  if (!confirm('إعادة تشغيل البوت؟')) return;
+  await api('/api/restart',{method:'POST'});
+  toast('جارٍ إعادة التشغيل…','info');
 }
 
-// ── Utils ─────────────────────────────────────────────────────────────────────
-async function api(url, method="GET", body=null) {
-  const opts = { method, headers: {} };
-  if (body) { opts.headers["Content-Type"] = "application/json"; opts.body = JSON.stringify(body); }
-  const r = await fetch(url, opts);
-  if (r.status === 401) { doLogout(); return null; }
-  return r.json();
-}
-
-function esc(t) {
-  return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-}
-function setText(id, v) { const el = document.getElementById(id); if (el) el.textContent = v; }
-function setVal(id, v)  { const el = document.getElementById(id); if (el) el.value = v; }
-
-function toast(msg, type="ok") {
-  const box = document.getElementById("toast-box");
-  const t = document.createElement("div");
-  t.className = `toast toast-${type}`;
-  t.textContent = msg;
-  box.appendChild(t);
-  setTimeout(() => { t.style.opacity = "0"; setTimeout(() => t.remove(), 400); }, 3000);
-}
-
-// ── Init ──────────────────────────────────────────────────────────────────────
-async function initApp() {
+/* ══ READY ══ */
+async function onReady() {
   initSocket();
   await loadStats();
-  await checkCookies();
-  setInterval(loadStats, 15000);
-  clog("sys","[SYS]","tag-sys","jarfis Dashboard v2.2.0 — © 2026 djamel");
+  loadCookieStatus();
 }
 
-// Check if already logged in
+/* ══ AUTO INIT (if already logged in) ══ */
 (async () => {
-  try {
-    const r = await fetch("/api/ping");
-    // Try a protected endpoint
-    const s = await fetch("/api/stats");
-    if (s.status === 401) return; // show login
-    document.getElementById("login-screen").classList.add("hidden");
-    document.getElementById("app").classList.remove("hidden");
-    initApp();
-  } catch { /* stay on login */ }
+  const r = await api('/api/ping');
+  if (r.ok) {
+    const pr = await api('/api/stats');
+    if (pr.ok) {
+      $('login-screen').classList.add('hidden');
+      $('app').classList.remove('hidden');
+      await onReady();
+    }
+  }
 })();
 </script>
 </body>

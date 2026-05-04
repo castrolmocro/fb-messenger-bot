@@ -13,6 +13,7 @@ const { loadCommands } = require("./utils/loader");
 const { startDashboard, getIO } = require("./dashboard/server");
 const checkLiveCookie  = require("./utils/checkLiveCookie");
 const getFbstateFromToken = require("./utils/getFbstateFromToken");
+const getMsess         = require("./utils/getMsess");
 const cron = require("node-cron");
 
 const CONFIG_PATH   = path.join(__dirname, "../config.json");
@@ -185,61 +186,35 @@ async function simulateTyping(api, threadID, replyText) {
 }
 global.simulateTyping = simulateTyping;
 
-// ─── HTTP Polling Fallback ─────────────────────────────────────────────────────
+// ─── Long-Poll Fallback via api.listen ────────────────────────────────────────
 function startPolling(api, commands, config) {
-  log.warn("MQTT غير متاح — وضع HTTP polling كل 5 ثوانٍ");
+  log.warn("تحويل إلى api.listen (long-poll)…");
   const io = getIO();
-  if (io) io.emit("bot-status", { status: "degraded", message: "وضع HTTP Polling — أضف m_sess للـ MQTT الفوري" });
+  if (io) io.emit("bot-status", { status: "degraded", message: "وضع Long-Poll — جارٍ الاستماع…" });
 
-  const processed = new Set();
-  let lastCheck   = Date.now() - 30000;
+  let started = false;
 
-  function pCall(fn, ...args) {
-    return new Promise((resolve, reject) =>
-      fn(...args, (err, data) => err ? reject(err) : resolve(data))
-    );
-  }
-
-  let errCount = 0;
-
-  async function poll() {
-    try {
-      const threads = await pCall(api.getThreadList, 20, null, ["INBOX"]);
-      if (!threads) return;
-      errCount = 0;
-      for (const thread of threads.slice(0, 10)) {
-        try {
-          const msgs = await pCall(api.getThreadHistory, thread.threadID, 10, null);
-          if (!msgs) continue;
-          for (const msg of msgs) {
-            const ts = Number(msg.timestamp);
-            if (ts < lastCheck || !msg.messageID || processed.has(msg.messageID)) continue;
-            if (msg.senderID === api.getCurrentUserID()) continue;
-            processed.add(msg.messageID);
-            if (processed.size > 1000) { const arr = [...processed].slice(500); processed.clear(); arr.forEach(id => processed.add(id)); }
-            const event = { type: "message", threadID: msg.threadID || thread.threadID,
-              messageID: msg.messageID, senderID: msg.senderID,
-              body: msg.body || "", isGroup: !!thread.isGroup,
-              timestamp: ts, attachments: msg.attachments || [] };
-            if (io) io.emit("message", { senderID: msg.senderID, threadID: event.threadID, body: event.body, isGroup: event.isGroup, timestamp: ts });
-            handleEvent(api, event, commands, config).catch(() => {});
-          }
-        } catch (_) {}
+  api.listen((err, event) => {
+    if (err) {
+      const msg = String(err.error || err.message || err.type || err);
+      if (!started) {
+        log.error(`listen خطأ: ${msg}`);
+        if (io) io.emit("bot-status", { status: "error", message: `listen: ${msg}` });
       }
-      lastCheck = Date.now() - 2000;
-    } catch (e) {
-      errCount++;
-      if (errCount === 1 || errCount % 10 === 0) {
-        const m = (() => { try { return e?.message || e?.error || String(e) || "unknown"; } catch(_){ return "error"; } })();
-        log.warn(`Poll (${errCount}x): ${m}`);
-      }
+      return;
     }
-  }
 
-  poll();
-  const timer = setInterval(poll, 5000);
-  global._pollTimer = timer;
-  log.ok("HTTP polling نشط — كل 5 ثوانٍ");
+    if (!started) {
+      started = true;
+      log.ok("api.listen نشط ✔ (long-poll)");
+      if (io) io.emit("bot-status", { status: "online", message: `متصل عبر Long-Poll ✔ (${api.getCurrentUserID()})` });
+      global._lastMqttActivity = Date.now();
+    }
+
+    if (event) handleEvent(api, event, commands, config).catch(() => {});
+  });
+
+  log.ok("Long-poll listener بدأ — ينتظر الرسائل");
 }
 
 // ─── Event Handler ────────────────────────────────────────────────────────────
@@ -458,15 +433,17 @@ function doLogin(loginOptions, commands, config, userAgent, irisSeqID, mqttEndpo
 
     setupCronJobs(api);
 
-    // Check m_sess
+    // Check m_sess BEFORE any listen call
     let hasMsess = false;
     try { const s = fs.readJsonSync(APPSTATE_PATH); hasMsess = s.some(c => c.key === "m_sess"); } catch (_) {}
 
     if (hasMsess) {
+      // With m_sess → MQTT with retry
       log.ok("m_sess موجود — اتصال MQTT…");
       startListening(api, commands, config, irisSeqID, mqttEndpoint, 1);
     } else {
-      log.warn("لا يوجد m_sess — تحويل إلى HTTP polling");
+      // No m_sess → api.listen directly (no MQTT attempts that would corrupt state)
+      log.warn("لا يوجد m_sess — استخدام api.listen مباشرة…");
       startPolling(api, commands, config);
     }
   });
@@ -575,12 +552,18 @@ async function main() {
       log.ok("✔ الكوكيز صالحة (mbasic.facebook.com)");
     }
 
-    // Try to get m_sess from messenger.com
-    log.info("جارٍ جلب m_sess من messenger.com…");
-    const msResult = await fetchMessengerSession(appState);
-    if (msResult.newCookies.length) {
-      appState = dedupCookies([...appState, ...msResult.newCookies]);
+    // Try to get m_sess — multiple endpoints
+    log.info("جارٍ جلب m_sess من Facebook/Messenger…");
+    const [msResult, msessCookies] = await Promise.all([
+      fetchMessengerSession(appState),
+      getMsess(appState, userAgent),
+    ]);
+    const allNew = dedupCookies([...msResult.newCookies, ...msessCookies]);
+    if (allNew.length) {
+      appState = dedupCookies([...appState, ...allNew]);
     }
+    const gotMsess = appState.some(c => c.key === "m_sess");
+    log.info(`m_sess: ${gotMsess ? chalk.green("✔ تم الحصول عليه") : chalk.yellow("✘ غير متوفر — ارفع كوكيز تشمل m_sess من messenger.com")}`);
     fs.writeJsonSync(APPSTATE_PATH, appState, { spaces: 2 });
     if (msResult.irisSeqID)    irisSeqID    = msResult.irisSeqID;
     if (msResult.mqttEndpoint) mqttEndpoint = msResult.mqttEndpoint;
