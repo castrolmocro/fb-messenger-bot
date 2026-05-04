@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>FCA Bot — Dashboard</title>
+<script src="/socket.io/socket.io.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#070711;--sidebar:#0d0d1f;--panel:#111128;--border:#1c1c38;
+  --accent:#7c6cfc;--accent2:#00d4ff;--green:#22c55e;--red:#ef4444;
+  --orange:#f97316;--yellow:#eab308;--text:#c8c8d8;--muted:#4a4a6a;
+  --sidebar-w:220px;
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;overflow-x:hidden}
+
+/* ── Sidebar ── */
+#sidebar{
+  width:var(--sidebar-w);min-width:var(--sidebar-w);background:var(--sidebar);
+  border-left:1px solid var(--border);display:flex;flex-direction:column;
+  position:fixed;right:0;top:0;bottom:0;z-index:50;
+}
+.sb-brand{padding:20px 16px 14px;border-bottom:1px solid var(--border)}
+.sb-brand .name{font-size:1rem;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sb-brand .sub{font-size:.7rem;color:var(--muted);margin-top:2px}
+.sb-status{margin:10px 12px;padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:#0a0a1a;display:flex;align-items:center;gap:7px;font-size:.75rem}
+#sb-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex-shrink:0;transition:background .3s}
+#sb-dot.online{background:var(--green);box-shadow:0 0 6px var(--green)}
+#sb-dot.error{background:var(--orange);box-shadow:0 0 6px var(--orange)}
+#sb-dot.offline{background:var(--red)}
+#sb-msg{color:var(--text);font-size:.72rem;line-height:1.3;word-break:break-word}
+nav{flex:1;padding:6px 0;overflow-y:auto}
+.nav-group{padding:8px 12px 4px;font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 16px;cursor:pointer;font-size:.83rem;color:var(--muted);transition:all .15s;border-right:3px solid transparent}
+.nav-item:hover{color:var(--text);background:#ffffff08}
+.nav-item.active{color:var(--accent2);background:#00d4ff10;border-right-color:var(--accent2)}
+.nav-item .ni{font-size:1rem;width:18px;text-align:center}
+.sb-footer{padding:12px;border-top:1px solid var(--border);font-size:.68rem;color:var(--muted);text-align:center}
+
+/* ── Main ── */
+#main{margin-right:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
+header{background:linear-gradient(135deg,#0e0e28,#14142e);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40}
+.header-title{font-size:1rem;font-weight:600;color:var(--text)}
+.header-id{font-size:.72rem;color:var(--muted);background:#0a0a1a;border:1px solid var(--border);padding:3px 10px;border-radius:6px;font-family:monospace}
+.content{padding:22px 24px;flex:1}
+
+/* ── Pages ── */
+.page{display:none}.page.active{display:block}
+
+/* ── Cards ── */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:22px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px 14px;text-align:center;transition:border-color .2s,transform .15s}
+.card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.card .ci{font-size:1.5rem;margin-bottom:6px}
+.card .cv{font-size:1.7rem;font-weight:700;color:var(--accent2)}
+.card .cl{font-size:.72rem;color:var(--muted);margin-top:3px}
+
+/* ── Section title ── */
+.sec{margin-bottom:22px}
+.sec-title{font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.sec-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ── Panel ── */
+.pnl{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px}
+.pnl+.pnl{margin-top:14px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:700px){.two{grid-template-columns:1fr}}
+
+/* ── Alert ── */
+.alert{border-radius:10px;padding:12px 16px;font-size:.82rem;line-height:1.6;margin-bottom:16px;display:none}
+.alert-warn{background:#1a1000;border:1px solid var(--orange);color:var(--orange)}
+.alert b{display:block;margin-bottom:3px}
+
+/* ── Form ── */
+label{font-size:.75rem;color:var(--muted);display:block;margin-bottom:4px}
+.fr{margin-bottom:12px}
+input,textarea,select{width:100%;background:#090916;border:1px solid var(--border);border-radius:8px;color:var(--text);padding:9px 12px;font-size:.87rem;outline:none;transition:border-color .2s;font-family:inherit}
+input:focus,textarea:focus{border-color:var(--accent)}
+textarea{resize:vertical}
+.btn{padding:8px 18px;border-radius:8px;border:none;font-size:.84rem;font-weight:600;cursor:pointer;transition:opacity .15s,transform .1s;font-family:inherit}
+.btn:active{transform:scale(.97)}
+.btn:hover{opacity:.85}
+.btn-p{background:linear-gradient(135deg,var(--accent),#5b4ce0);color:#fff}
+.btn-s{background:linear-gradient(135deg,var(--green),#16a34a);color:#fff}
+.btn-d{background:linear-gradient(135deg,var(--red),#991b1b);color:#fff}
+.btn-o{background:linear-gradient(135deg,var(--orange),#c2410c);color:#fff}
+.fb{font-size:.8rem;margin-top:8px;min-height:18px}
+.fb.ok{color:var(--green)}.fb.err{color:var(--red)}
+
+/* ── Cookie status bar ── */
+.ck-bar{display:flex;align-items:center;gap:10px;padding:10px 13px;background:#080816;border:1px solid var(--border);border-radius:8px;margin-bottom:13px;font-size:.8rem}
+.ck-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.ck-dot.ok{background:var(--green);box-shadow:0 0 5px var(--green)}
+.ck-dot.warn{background:var(--orange);box-shadow:0 0 5px var(--orange)}
+.ck-dot.none{background:var(--muted)}
+
+/* ── Terminal / Console ── */
+#console-box{background:#050510;border:1px solid var(--border);border-radius:10px;padding:12px 14px;height:420px;overflow-y:auto;font-family:'Cascadia Code','Courier New',monospace;font-size:.77rem;display:flex;flex-direction:column-reverse}
+.c-row{padding:2px 0;display:flex;gap:8px;border-bottom:1px solid #0d0d20;word-break:break-all}
+.c-ts{color:#3a3a5a;flex-shrink:0}
+.c-tag{flex-shrink:0;font-weight:700}
+.c-body{flex:1}
+.tag-msg{color:var(--accent2)}.tag-cmd{color:#a78bfa}.tag-evt{color:var(--green)}.tag-err{color:var(--red)}.tag-sys{color:var(--yellow)}.tag-ok{color:var(--green)}
+.console-toolbar{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.ctag-btn{padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--panel);color:var(--muted);font-size:.72rem;cursor:pointer;transition:all .15s}
+.ctag-btn.active{border-color:var(--accent);color:var(--accent2);background:#00d4ff10}
+
+/* ── Commands ── */
+.cmd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.cmd-card{background:#0a0a1a;border:1px solid var(--border);border-radius:10px;padding:13px;transition:border-color .2s}
+.cmd-card:hover{border-color:var(--accent)}
+.cmd-name{font-weight:700;color:var(--accent2);font-size:.9rem;display:flex;align-items:center;gap:6px}
+.cmd-desc{color:var(--muted);font-size:.75rem;margin:4px 0 3px}
+.cmd-usage{color:#3f3f6a;font-size:.72rem;font-family:monospace}
+.badge{font-size:.62rem;padding:2px 6px;border-radius:4px;font-weight:700;text-transform:uppercase}
+.b-owner{background:#713f12;color:#fcd34d}
+.b-admin{background:#7c1d1d;color:#fca5a5}
+.b-pub{background:#164e63;color:#67e8f9}
+.cmd-search{margin-bottom:12px}
+
+/* ── Send ── */
+.thread-pills{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:8px}
+.tpill{padding:4px 11px;background:#0a0a1a;border:1px solid var(--border);border-radius:20px;font-size:.74rem;cursor:pointer;color:var(--muted);transition:all .15s}
+.tpill:hover{border-color:var(--accent);color:var(--text)}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+</style>
+</head>
+<body>
+
+<!-- ── Sidebar ── -->
+<aside id="sidebar">
+  <div class="sb-brand">
+    <div class="name">🤖 FCA Userbot</div>
+    <div class="sub">fca-unofficial dashboard</div>
+  </div>
+  <div class="sb-status">
+    <div id="sb-dot"></div>
+    <div id="sb-msg">جاري الاتصال…</div>
+  </div>
+  <nav>
+    <div class="nav-group">عام</div>
+    <div class="nav-item active" onclick="goto('home')" id="nav-home"><span class="ni">🏠</span> الرئيسية</div>
+    <div class="nav-item" onclick="goto('console')" id="nav-console"><span class="ni">📡</span> الكونسل المباشر</div>
+    <div class="nav-group">الإدارة</div>
+    <div class="nav-item" onclick="goto('cookies')" id="nav-cookies"><span class="ni">🍪</span> الكوكيز</div>
+    <div class="nav-item" onclick="goto('send')" id="nav-send"><span class="ni">📤</span> إرسال رسالة</div>
+    <div class="nav-group">البوت</div>
+    <div class="nav-item" onclick="goto('commands')" id="nav-commands"><span class="ni">⌨️</span> الأوامر</div>
+  </nav>
+  <div class="sb-footer">
+    Owner: <span id="sb-owner" style="color:var(--accent2);font-family:monospace">—</span><br>
+    Admins: <span id="sb-admins" style="color:var(--accent2)">—</span>
+  </div>
+</aside>
+
+<!-- ── Main ── -->
+<div id="main">
+  <header>
+    <span class="header-title" id="hdr-page">🏠 الرئيسية</span>
+    <span class="header-id" id="hdr-uid">UID: —</span>
+  </header>
+
+  <div class="content">
+
+    <!-- ══ HOME ══ -->
+    <div class="page active" id="page-home">
+      <div id="alert-msess" class="alert alert-warn">
+        <b>⚠️ m_sess مفقود — MQTT سيُرفض</b>
+        افتح <a href="https://www.messenger.com" target="_blank" style="color:inherit;text-decoration:underline">messenger.com</a>
+        في Chrome، اضغط على أي محادثة، ثم Cookie-Editor → Export JSON → انسخ وألصق في صفحة الكوكيز.
+      </div>
+
+      <div class="stat-grid">
+        <div class="card"><div class="ci">👥</div><div class="cv" id="s-users">—</div><div class="cl">مستخدمون</div></div>
+        <div class="card"><div class="ci">💬</div><div class="cv" id="s-threads">—</div><div class="cl">محادثات</div></div>
+        <div class="card"><div class="ci">⌨️</div><div class="cv" id="s-runs">—</div><div class="cl">أوامر مُنفَّذة</div></div>
+        <div class="card"><div class="ci">📦</div><div class="cv" id="s-loaded">—</div><div class="cl">أوامر محمَّلة</div></div>
+        <div class="card"><div class="ci">👑</div><div class="cv" id="s-admins">—</div><div class="cl">أدمنز</div></div>
+        <div class="card"><div class="ci">⏱️</div><div class="cv" id="s-uptime">—</div><div class="cl">وقت التشغيل</div></div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-title">📋 آخر الأحداث</div>
+        <div class="pnl" style="padding:0;overflow:hidden">
+          <div id="home-log" style="height:220px;overflow-y:auto;padding:12px 14px;font-family:monospace;font-size:.77rem;display:flex;flex-direction:column-reverse">
+            <div style="color:var(--muted)">في انتظار الأحداث…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ CONSOLE ══ -->
+    <div class="page" id="page-console">
+      <div class="sec">
+        <div class="sec-title">📡 الكونسل المباشر</div>
+        <div class="console-toolbar">
+          <button class="ctag-btn active" onclick="toggleFilter('all',this)">الكل</button>
+          <button class="ctag-btn" onclick="toggleFilter('msg',this)">رسائل</button>
+          <button class="ctag-btn" onclick="toggleFilter('cmd',this)">أوامر</button>
+          <button class="ctag-btn" onclick="toggleFilter('evt',this)">أحداث</button>
+          <button class="ctag-btn" onclick="toggleFilter('err',this)">أخطاء</button>
+          <button class="ctag-btn" style="margin-right:auto" onclick="clearConsole()">🗑 مسح</button>
+        </div>
+        <div id="console-box"><div class="c-row"><span class="c-ts">--:--:--</span><span class="c-tag tag-sys">[SYS]</span><span class="c-body" style="color:var(--muted)">في انتظار الاتصال…</span></div></div>
+      </div>
+    </div>
+
+    <!-- ══ COOKIES ══ -->
+    <div class="page" id="page-cookies">
+      <div class="sec">
+        <div class="sec-title">🍪 إدارة الكوكيز</div>
+
+        <div class="pnl">
+          <div class="ck-bar">
+            <div class="ck-dot none" id="ck-dot"></div>
+            <span id="ck-label">جاري الفحص…</span>
+          </div>
+
+          <div id="ck-guide" class="alert alert-warn" style="display:none">
+            <b>📋 كيف تحصل على كوكيز messenger.com؟</b>
+            ١. افتح <a href="https://www.messenger.com" target="_blank" style="color:inherit;text-decoration:underline">messenger.com</a> في Chrome وأنت مسجّل<br>
+            ٢. اضغط على أي محادثة حتى تُفتح<br>
+            ٣. افتح إضافة <strong>Cookie-Editor</strong> ← Export JSON ← انسخ النص كاملاً<br>
+            ٤. الصق في الحقل أدناه ← اضغط "حفّظ"
+          </div>
+
+          <div class="fr">
+            <label>الصق كوكيز c3c / Cookie-Editor JSON هنا:</label>
+            <textarea id="ck-input" style="height:120px;font-family:monospace;font-size:.75rem" placeholder='[{"key":"c_user","value":"...","domain":"facebook.com",...}, {"key":"m_sess","value":"...","domain":"messenger.com",...}]'></textarea>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-s" onclick="saveCookies()">💾 حفّظ الكوكيز</button>
+            <button class="btn btn-o" onclick="validateCookies()">🔍 تحقق</button>
+          </div>
+          <div class="fb" id="ck-fb"></div>
+        </div>
+
+        <div class="pnl" style="margin-top:14px">
+          <div class="sec-title" style="margin-bottom:10px">📖 دليل صيغة c3c</div>
+          <div style="font-size:.78rem;color:var(--muted);line-height:1.8">
+            <strong style="color:var(--text)">صيغة c3c (fca-unofficial):</strong><br>
+            <code style="color:var(--accent2)">[{"key":"c_user","value":"ID","domain":"facebook.com","path":"/","expires":"2027-01-01T00:00:00.000Z"}]</code><br><br>
+            <strong style="color:var(--text)">صيغة Cookie-Editor:</strong><br>
+            <code style="color:var(--accent2)">[{"name":"c_user","value":"ID","domain":"facebook.com","path":"/","expirationDate":1234567890}]</code><br><br>
+            <strong style="color:var(--text)">البوت يدعم كلا الصيغتين تلقائياً. ✔</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SEND ══ -->
+    <div class="page" id="page-send">
+      <div class="sec">
+        <div class="sec-title">📤 إرسال رسالة</div>
+        <div class="pnl">
+          <div class="fr">
+            <label>Thread ID</label>
+            <input type="text" id="s-thread" placeholder="100012345678901"/>
+          </div>
+          <div class="fr">
+            <label>الرسالة</label>
+            <textarea id="s-body" style="height:100px" placeholder="اكتب رسالتك هنا…"></textarea>
+          </div>
+          <button class="btn btn-p" onclick="sendMsg()">إرسال ←</button>
+          <div class="fb" id="s-fb"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ COMMANDS ══ -->
+    <div class="page" id="page-commands">
+      <div class="sec">
+        <div class="sec-title">⌨️ قائمة الأوامر</div>
+        <div class="cmd-search fr">
+          <input type="text" id="cmd-q" placeholder="ابحث عن أمر…" oninput="filterCmds()"/>
+        </div>
+        <div class="cmd-grid" id="cmd-grid"><div style="color:var(--muted);font-size:.85rem">جاري التحميل…</div></div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+const socket = io();
+let prefix = "/";
+let allCmds = [];
+let consoleFilter = "all";
+let consoleRows = [];
+
+/* ── Navigation ── */
+const pageTitles = {home:"🏠 الرئيسية",console:"📡 الكونسل المباشر",cookies:"🍪 الكوكيز",send:"📤 إرسال رسالة",commands:"⌨️ الأوامر"};
+function goto(id){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
+  document.getElementById("page-"+id).classList.add("active");
+  document.getElementById("nav-"+id).classList.add("active");
+  document.getElementById("hdr-page").textContent = pageTitles[id]||id;
+}
+
+/* ── Socket status ── */
+socket.on("bot-status",(d)=>{
+  const dot=document.getElementById("sb-dot"), msg=document.getElementById("sb-msg");
+  const alert=document.getElementById("alert-msess");
+  dot.className=""; msg.className="";
+  if(d.status==="online"){dot.classList.add("online");msg.textContent="متصل ✔";alert.style.display="none";}
+  else if(d.status==="error"){dot.classList.add("error");msg.textContent=d.message&&d.message.length<60?d.message:"خطأ في الاتصال";
+    if(d.message&&d.message.includes("m_sess"))alert.style.display="block";}
+  else{dot.classList.add("offline");msg.textContent="غير متصل";}
+  clog("sys","[SYS]","tag-sys","البوت: "+(d.message||d.status));
+});
+
+/* ── Events ── */
+socket.on("message",(d)=>{
+  const body=d.body?String(d.body).substring(0,100):"";
+  clog("msg","[MSG]","tag-msg",`${d.senderID} ← ${body||"(فارغ)"}`);
+  homeLog("💬",`${d.senderID}: ${body}`,"var(--accent2)");
+});
+socket.on("cookies-updated",(d)=>{
+  setCkStatus(d.hasMsess,d.count);
+  clog("sys","[CK]","tag-ok",`كوكيز محدَّثة: ${d.count} — m_sess: ${d.hasMsess?"✔":"✘"}`);
+});
+socket.on("event",(d)=>{
+  clog("evt","[EVT]","tag-evt","حدث: "+d.type);
+  homeLog("📌",d.type,"var(--green)");
+});
+socket.on("group-event",(d)=>{
+  clog("evt","[GRP]","tag-evt","جماعي: "+(d.logMessageType||""));
+  homeLog("👥",d.logMessageType||"group_event","var(--green)");
+});
+socket.on("typing",(d)=>{
+  if(d.isTyping)clog("evt","[TYP]","tag-evt",`${d.from} يكتب…`);
+});
+
+/* ── Console ── */
+function clog(type,tag,tagCls,body){
+  const ts=new Date().toLocaleTimeString("en",{hour12:false,hour:"2-digit",minute:"2-digit",second:"2-digit"});
+  const row={type,html:`<span class="c-ts">${ts}</span><span class="c-tag ${tagCls}">${esc(tag)}</span><span class="c-body">${esc(body)}</span>`};
+  consoleRows.unshift(row);
+  if(consoleRows.length>300)consoleRows.pop();
+  renderConsole();
+}
+function renderConsole(){
+  const box=document.getElementById("console-box");
+  const rows=consoleFilter==="all"?consoleRows:consoleRows.filter(r=>r.type===consoleFilter);
+  box.innerHTML=rows.slice(0,150).map(r=>`<div class="c-row">${r.html}</div>`).join("")||`<div class="c-row"><span class="c-body" style="color:var(--muted)">لا يوجد محتوى للفلتر المحدد</span></div>`;
+}
+function toggleFilter(f,el){
+  consoleFilter=f;
+  document.querySelectorAll(".ctag-btn").forEach(b=>b.classList.remove("active"));
+  el.classList.add("active");
+  renderConsole();
+}
+function clearConsole(){consoleRows=[];renderConsole();}
+
+/* ── Home log ── */
+function homeLog(icon,text,color){
+  const box=document.getElementById("home-log");
+  if(box.children.length===1&&box.children[0].style.color==="var(--muted)")box.innerHTML="";
+  const ts=new Date().toLocaleTimeString("en",{hour12:false});
+  const row=document.createElement("div");
+  row.className="c-row";
+  row.innerHTML=`<span class="c-ts">${ts}</span><span>${icon}</span><span class="c-body" style="color:${color}">${esc(text.substring(0,90))}</span>`;
+  box.insertBefore(row,box.firstChild);
+  if(box.children.length>50)box.removeChild(box.lastChild);
+}
+
+/* ── Stats ── */
+async function loadStats(){
+  try{
+    const d=await fetch("/api/stats").then(r=>r.json());
+    document.getElementById("s-users").textContent=d.totalUsers??"—";
+    document.getElementById("s-threads").textContent=d.totalThreads??"—";
+    document.getElementById("s-runs").textContent=d.totalCommands??"—";
+    document.getElementById("s-loaded").textContent=d.commands??"—";
+    document.getElementById("s-admins").textContent=((d.adminCount||0)+1);
+    document.getElementById("sb-owner").textContent=d.ownerID||"—";
+    document.getElementById("sb-admins").textContent=(d.adminCount||0)+1;
+    document.getElementById("hdr-uid").textContent="UID: "+(d.ownerID||"—");
+    prefix=d.prefix||"/";
+    if(d.uptime!=null){
+      const h=Math.floor(d.uptime/3600),m=Math.floor((d.uptime%3600)/60),s=Math.floor(d.uptime%60);
+      document.getElementById("s-uptime").textContent=`${h}h${m}m${s}s`;
+    }
+  }catch(_){}
+}
+
+/* ── Commands ── */
+async function loadCmds(){
+  try{
+    allCmds=await fetch("/api/commands").then(r=>r.json());
+    renderCmds(allCmds);
+  }catch(_){}
+}
+function renderCmds(list){
+  const g=document.getElementById("cmd-grid");
+  if(!list.length){g.innerHTML=`<div style="color:var(--muted)">لا توجد أوامر</div>`;return;}
+  g.innerHTML=list.map(c=>{
+    const ob=c.ownerOnly?`<span class="badge b-owner">مالك</span>`:"";
+    const ab=c.adminOnly&&!c.ownerOnly?`<span class="badge b-admin">أدمن</span>`:"";
+    const pb=!c.adminOnly&&!c.ownerOnly?`<span class="badge b-pub">عام</span>`:"";
+    return`<div class="cmd-card"><div class="cmd-name">${prefix}${esc(c.name)}${ob}${ab}${pb}</div><div class="cmd-desc">${esc(c.description||"—")}</div><div class="cmd-usage">${prefix}${esc(c.usage||c.name)}</div>${c.aliases&&c.aliases.length?`<div class="cmd-usage" style="color:var(--muted)">aliases: ${esc(c.aliases.join(", "))}</div>`:""}</div>`;
+  }).join("");
+}
+function filterCmds(){
+  const q=document.getElementById("cmd-q").value.toLowerCase();
+  renderCmds(q?allCmds.filter(c=>c.name.includes(q)||(c.description||"").toLowerCase().includes(q)):allCmds);
+}
+
+/* ── Cookie status ── */
+function setCkStatus(hasMsess,count){
+  const dot=document.getElementById("ck-dot"),lbl=document.getElementById("ck-label");
+  const alert=document.getElementById("alert-msess"),guide=document.getElementById("ck-guide");
+  if(hasMsess){
+    dot.className="ck-dot ok";lbl.textContent=`✔ m_sess موجود — ${count} كوكي — MQTT سيعمل`;
+    alert.style.display="none";guide.style.display="none";
+  }else if(count>0){
+    dot.className="ck-dot warn";lbl.textContent=`⚠ ${count} كوكي — m_sess غائب (MQTT سيُرفض)`;
+    alert.style.display="block";guide.style.display="block";
+  }else{
+    dot.className="ck-dot none";lbl.textContent="لا توجد كوكيز محمَّلة";
+    guide.style.display="block";
+  }
+}
+async function checkCookies(){
+  try{const d=await fetch("/api/cookies").then(r=>r.json());if(d.exists)setCkStatus(d.hasMsess,d.count);}catch(_){}
+}
+
+/* ── Validate cookies input ── */
+function validateCookies(){
+  const raw=document.getElementById("ck-input").value.trim();
+  const fb=document.getElementById("ck-fb");
+  if(!raw){fb.className="fb err";fb.textContent="❌ الحقل فارغ";return;}
+  try{
+    const a=JSON.parse(raw);
+    if(!Array.isArray(a)){fb.className="fb err";fb.textContent="❌ يجب أن يكون JSON مصفوفة []";return;}
+    const hasMsess=a.some(c=>(c.key||c.name)==="m_sess");
+    const hasUser=a.some(c=>(c.key||c.name)==="c_user");
+    const fmt=a[0]&&a[0].key?"c3c ✔":a[0]&&a[0].name?"Cookie-Editor ✔":"غير معروف";
+    fb.className="fb ok";
+    fb.textContent=`✔ صالح — ${a.length} كوكي — صيغة: ${fmt} — c_user: ${hasUser?"✔":"✘"} — m_sess: ${hasMsess?"✔":"✘ (مطلوب للـ MQTT)"}`;
+  }catch(e){fb.className="fb err";fb.textContent="❌ JSON غير صالح: "+e.message;}
+}
+
+/* ── Save cookies ── */
+async function saveCookies(){
+  const raw=document.getElementById("ck-input").value.trim();
+  const fb=document.getElementById("ck-fb");
+  if(!raw){fb.className="fb err";fb.textContent="❌ الحقل فارغ";return;}
+  let parsed;
+  try{parsed=JSON.parse(raw);}catch(e){fb.className="fb err";fb.textContent="❌ JSON غير صالح: "+e.message;return;}
+  try{
+    const r=await fetch("/api/cookies",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({cookies:parsed})});
+    const d=await r.json();
+    if(d.success){
+      fb.className="fb ok";
+      fb.textContent=`✅ تم حفظ ${d.count} كوكي. m_sess: ${d.hasMsess?"✔ موجود — أعد تشغيل البوت":"✘ غائب — صدّر من messenger.com (افتح محادثة أولاً)"}`;
+      setCkStatus(d.hasMsess,d.count);
+      document.getElementById("ck-input").value="";
+    }else{fb.className="fb err";fb.textContent="❌ "+d.error;}
+  }catch(_){fb.className="fb err";fb.textContent="❌ خطأ في الشبكة";}
+}
+
+/* ── Send message ── */
+async function sendMsg(){
+  const threadID=document.getElementById("s-thread").value.trim();
+  const message=document.getElementById("s-body").value.trim();
+  const fb=document.getElementById("s-fb");
+  if(!threadID||!message){fb.className="fb err";fb.textContent="❌ أدخل Thread ID والرسالة";return;}
+  try{
+    const r=await fetch("/api/send",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({threadID,message})});
+    const d=await r.json();
+    if(d.success){fb.className="fb ok";fb.textContent="✅ تم الإرسال!";document.getElementById("s-body").value="";clog("sys","[SEND]","tag-ok",`أُرسلت رسالة إلى ${threadID}`);}
+    else{fb.className="fb err";fb.textContent="❌ "+d.error;}
+  }catch(_){fb.className="fb err";fb.textContent="❌ خطأ في الشبكة";}
+}
+
+/* ── Utility ── */
+function esc(t){return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+
+/* ── Init ── */
+clog("sys","[SYS]","tag-sys","Dashboard loaded — v1.0.0");
+loadStats();loadCmds();checkCookies();
+setInterval(loadStats,15000);
+</script>
+</body>
+</html>
