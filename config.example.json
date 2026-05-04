@@ -1,12 +1,21 @@
 {
-  "botName": "FCA Bot",
+  "botName": "My FB Bot",
   "prefix": "/",
-  "ownerID": "YOUR_FB_UID",
-  "email": "",
-  "password": "",
+  "ownerID": "YOUR_FACEBOOK_USER_ID",
+  "adminIDs": ["ADMIN_FB_ID_1", "ADMIN_FB_ID_2"],
+  "email": "your@email.com",
+  "password": "yourpassword",
   "dashboardPort": 3000,
   "timezone": "Africa/Algiers",
-  "adminIDs": [],
+  "locale": "fr_DZ",
+  "countryCode": "DZ",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
   "forceLogin": false,
-  "cronJobs": []
+  "cronJobs": [
+    {
+      "schedule": "0 9 * * *",
+      "threadID": "THREAD_ID_HERE",
+      "message": "صباح الخير يا جماعة! ☀️"
+    }
+  ]
 }

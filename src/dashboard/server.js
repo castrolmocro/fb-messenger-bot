@@ -11,25 +11,64 @@ const CONFIG_PATH   = path.join(__dirname, "../../config.json");
 
 let io;
 
-// Normalize cookie arrays (c3c or Cookie-Editor)
+// ─── Cookie normalizer (c3c or Cookie-Editor) ─────────────────────────────────
 function normalizeCookies(raw) {
   if (!Array.isArray(raw) || !raw.length) return raw;
+  const FAR = new Date(Date.now() + 365 * 24 * 3600 * 1000).toISOString();
   const f = raw[0];
-  if (f.key) return raw.map((c) => ({ ...c, domain: (c.domain || "facebook.com").replace(/^\./, ""), expires: c.expires || new Date(Date.now() + 365*24*3600*1000).toISOString() }));
-  if (f.name) return raw.map((c) => ({ key: c.name, value: c.value, domain: (c.domain || "facebook.com").replace(/^\./, ""), path: c.path || "/", hostOnly: c.hostOnly || false, expires: c.expirationDate ? new Date(c.expirationDate * 1000).toISOString() : new Date(Date.now() + 365*24*3600*1000).toISOString(), creation: new Date().toISOString(), lastAccessed: new Date().toISOString() }));
+  if (f.key) {
+    return raw.map((c) => ({
+      ...c,
+      domain:  (c.domain || "facebook.com").replace(/^\./, ""),
+      expires: c.expires || FAR,
+    }));
+  }
+  if (f.name) {
+    return raw.map((c) => ({
+      key:          c.name,
+      value:        c.value,
+      domain:       (c.domain || "facebook.com").replace(/^\./, ""),
+      path:         c.path || "/",
+      hostOnly:     c.hostOnly || false,
+      expires:      c.expirationDate ? new Date(c.expirationDate * 1000).toISOString() : FAR,
+      creation:     new Date().toISOString(),
+      lastAccessed: new Date().toISOString(),
+    }));
+  }
   return raw;
 }
 
+// ─── Start dashboard ──────────────────────────────────────────────────────────
 async function startDashboard(port) {
   const app    = express();
   const server = http.createServer(app);
-  io = new Server(server);
+
+  // Trust Replit's reverse proxy so req.ip / headers work correctly
+  app.set("trust proxy", 1);
+
+  // Socket.IO — allow all origins (required behind Replit proxy)
+  io = new Server(server, {
+    cors: {
+      origin:  "*",
+      methods: ["GET", "POST"],
+    },
+    // Allow both WebSocket and polling (polling works even if WS is blocked)
+    transports: ["polling", "websocket"],
+    allowEIO3:  true,
+  });
 
   app.use(bodyParser.json({ limit: "5mb" }));
+
+  // Disable cache (Replit proxy sometimes caches aggressively)
+  app.use((_req, res, next) => {
+    res.set("Cache-Control", "no-store");
+    next();
+  });
+
   app.use(express.static(path.join(__dirname, "public")));
 
-  // ── Stats ──────────────────────────────────────────────────────────────────
-  app.get("/api/stats", async (req, res) => {
+  // ── API: stats ─────────────────────────────────────────────────────────────
+  app.get("/api/stats", async (_req, res) => {
     try {
       const stats = await getStats();
       const cfg   = fs.existsSync(CONFIG_PATH) ? fs.readJsonSync(CONFIG_PATH) : {};
@@ -46,32 +85,41 @@ async function startDashboard(port) {
     } catch (e) { res.status(500).json({ error: e.message }); }
   });
 
-  // ── Commands list ──────────────────────────────────────────────────────────
-  app.get("/api/commands", (req, res) => {
+  // ── API: commands list ─────────────────────────────────────────────────────
+  app.get("/api/commands", (_req, res) => {
     if (!global.commands) return res.json([]);
     const seen = new Set();
     const list = [];
     for (const [, cmd] of global.commands) {
       if (!seen.has(cmd.config.name)) {
         seen.add(cmd.config.name);
-        list.push({ name: cmd.config.name, description: cmd.config.description, usage: cmd.config.usage, adminOnly: cmd.config.adminOnly, ownerOnly: cmd.config.ownerOnly, aliases: cmd.config.aliases || [] });
+        list.push({
+          name:        cmd.config.name,
+          description: cmd.config.description,
+          usage:       cmd.config.usage,
+          adminOnly:   cmd.config.adminOnly,
+          ownerOnly:   cmd.config.ownerOnly,
+          aliases:     cmd.config.aliases || [],
+        });
       }
     }
     res.json(list);
   });
 
-  // ── Send message ───────────────────────────────────────────────────────────
+  // ── API: send message ──────────────────────────────────────────────────────
   app.post("/api/send", async (req, res) => {
     const { threadID, message } = req.body;
     if (!global.api)           return res.status(503).json({ error: "Bot not connected" });
     if (!threadID || !message) return res.status(400).json({ error: "threadID and message required" });
     try {
-      await new Promise((ok, fail) => global.api.sendMessage(message, threadID, (e) => e ? fail(e) : ok()));
+      await new Promise((ok, fail) =>
+        global.api.sendMessage(message, threadID, (e) => (e ? fail(e) : ok()))
+      );
       res.json({ success: true });
     } catch (e) { res.status(500).json({ error: e.message }); }
   });
 
-  // ── Upload / paste cookies ─────────────────────────────────────────────────
+  // ── API: upload cookies ────────────────────────────────────────────────────
   app.post("/api/cookies", (req, res) => {
     try {
       let raw = req.body.cookies;
@@ -85,23 +133,27 @@ async function startDashboard(port) {
     } catch (e) { res.status(400).json({ error: "Parse error: " + e.message }); }
   });
 
-  // ── Check current cookies ──────────────────────────────────────────────────
-  app.get("/api/cookies", (req, res) => {
+  // ── API: check cookies ─────────────────────────────────────────────────────
+  app.get("/api/cookies", (_req, res) => {
     if (!fs.existsSync(APPSTATE_PATH)) return res.json({ exists: false, count: 0, hasMsess: false });
     const raw      = fs.readJsonSync(APPSTATE_PATH);
     const hasMsess = Array.isArray(raw) && raw.some((c) => c.key === "m_sess");
     res.json({ exists: true, count: Array.isArray(raw) ? raw.length : 0, hasMsess });
   });
 
+  // ── API: health check ──────────────────────────────────────────────────────
+  app.get("/api/ping", (_req, res) => res.json({ ok: true, uptime: process.uptime() }));
+
   // ── Socket ─────────────────────────────────────────────────────────────────
   io.on("connection", (socket) => {
     socket.emit("bot-status", {
       status:  global.api ? "online" : "offline",
-      message: global.api ? "Bot is online" : "Bot not connected",
+      message: global.api ? `متصل ✔ (${global.api.getCurrentUserID()})` : "Bot not connected",
     });
   });
 
-  await new Promise((resolve) => server.listen(port, resolve));
+  // Listen on ALL interfaces so Replit proxy can reach the server
+  await new Promise((resolve) => server.listen(port, "0.0.0.0", resolve));
   return { app, server, io };
 }
 
