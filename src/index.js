@@ -254,10 +254,13 @@ function startPolling(api, commands, config) {
     );
   }
 
+  let pollErrorCount = 0;
+
   async function poll() {
     try {
       const threads = await pCall(api.getThreadList, 20, null, ["INBOX"]);
       if (!threads) return;
+      pollErrorCount = 0;
 
       for (const thread of threads.slice(0, 10)) {
         try {
@@ -307,7 +310,12 @@ function startPolling(api, commands, config) {
       }
       lastCheck = Date.now() - 2000; // 2s overlap
     } catch (e) {
-      log.warn(`Poll error: ${e.message}`);
+      pollErrorCount++;
+      // Only log every 10th consecutive error to avoid spam
+      if (pollErrorCount === 1 || pollErrorCount % 10 === 0) {
+        const errMsg = e.message || e.error || String(e);
+        log.warn(`Poll error (${pollErrorCount}x): ${errMsg}`);
+      }
     }
   }
 
